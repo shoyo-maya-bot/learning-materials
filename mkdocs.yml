@@ -1,0 +1,137 @@
+site_name: 開発者向け教材（Java / Spring Boot）
+site_description: 新しく参加した開発者が、環境構築から実ソースの読解・API・非同期処理・設計品質までを順に学ぶ教材
+site_url: https://shoyo-maya-bot.github.io/learning-materials/
+repo_url: https://github.com/shoyo-maya-bot/learning-materials
+edit_uri: edit/main/docs/
+docs_dir: docs
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/weather-night, name: ダークモード}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/weather-sunny, name: ライトモード}
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+plugins:
+  - search:
+      lang: ja
+validation:
+  links:
+    not_found: warn
+    anchors: warn
+nav:
+  - はじめに: index.md
+  - 学習の進め方: guide.md
+  - 10 環境構築:
+      - 10-setup/index.md
+      - 10-setup/10-01-overview.md
+      - 10-setup/10-02-git.md
+      - 10-setup/10-03-jdk-vscode.md
+      - 10-setup/10-04-docker-local.md
+      - 10-setup/10-05-run-sample-app.md
+      - 10-setup/10-06-copilot.md
+  - 20 基礎:
+      - 20-basics/index.md
+      - 20-basics/20-01-java-syntax.md
+      - 20-basics/20-02-class-interface.md
+      - 20-basics/20-03-collections-stream.md
+      - 20-basics/20-04-exception.md
+      - 20-basics/20-05-record-immutable.md
+      - 20-basics/20-06-gradle.md
+      - 20-basics/20-07-spring-di.md
+      - 20-basics/20-08-config-profile.md
+      - 20-basics/20-09-rest-controller.md
+      - 20-basics/20-10-validation.md
+      - 20-basics/20-11-sql.md
+      - 20-basics/20-12-mybatis.md
+      - 20-basics/20-13-transaction.md
+      - 20-basics/20-14-logging.md
+      - 20-basics/20-15-junit.md
+      - 20-basics/20-16-mock.md
+      - 20-basics/20-17-karate.md
+      - 20-basics/20-18-git-flow-review.md
+  - 30 実ソース読解:
+      - 30-reading/index.md
+      - 30-reading/30-01-how-to-read.md
+      - 30-reading/30-02-build-gradle.md
+      - 30-reading/30-03-startup-profile.md
+      - 30-reading/30-04-error-response.md
+      - 30-reading/30-05-message-ids.md
+      - 30-reading/30-06-member-controller.md
+      - 30-reading/30-07-member-service.md
+      - 30-reading/30-08-mapper-sql.md
+      - 30-reading/30-09-order-import-overview.md
+      - 30-reading/30-10-csv-parse-validate.md
+      - 30-reading/30-11-idempotent-insert.md
+      - 30-reading/30-12-file-fetcher-s3.md
+      - 30-reading/30-13-batch-exit-code.md
+      - 30-reading/30-14-read-unit-tests.md
+      - 30-reading/30-15-read-karate.md
+      - 解答:
+          - 30-reading/answers/index.md
+          - 30-reading/answers/30-01.md
+          - 30-reading/answers/30-02.md
+          - 30-reading/answers/30-03.md
+          - 30-reading/answers/30-04.md
+          - 30-reading/answers/30-05.md
+          - 30-reading/answers/30-06.md
+          - 30-reading/answers/30-07.md
+          - 30-reading/answers/30-08.md
+          - 30-reading/answers/30-09.md
+          - 30-reading/answers/30-10.md
+          - 30-reading/answers/30-11.md
+          - 30-reading/answers/30-12.md
+          - 30-reading/answers/30-13.md
+          - 30-reading/answers/30-14.md
+          - 30-reading/answers/30-15.md
+  - 40 非同期処理:
+      - 40-async/index.md
+      - 40-async/40-01-async-basics.md
+      - 40-async/40-02-queue-retry-idempotency.md
+  - 50 API:
+      - 50-api/index.md
+      - 50-api/50-01-rest-principles.md
+      - 50-api/50-02-uri-method.md
+      - 50-api/50-03-status-error.md
+      - 50-api/50-04-openapi.md
+      - 50-api/50-05-paging-search.md
+      - 50-api/50-06-auth.md
+      - 50-api/50-07-api-test-versioning.md
+  - 60 設計品質:
+      - 60-quality/index.md
+      - 60-quality/60-01-design-doc.md
+      - 60-quality/60-02-review.md
+      - 60-quality/60-03-measure-quality.md
+  - 00 マネジメント:
+      - 00-management/index.md
+      - 00-management/00-01-project-management.md
+  - 付録:
+      - appendix/index.md
+      - appendix/troubleshooting.md
+      - appendix/references.md
+      - appendix/how-to-ask.md
