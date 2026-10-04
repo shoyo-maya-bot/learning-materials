@@ -12,10 +12,11 @@
 | 40 非同期処理 | 2 | スレッド・@Async・キュー（SQS）・再試行・冪等性 |
 | 50 API | 7 | REST 設計・ステータスとエラー応答・OpenAPI・ページング・認証と認可・テスト |
 | 60 設計品質 | 3 | 設計書の書き方・レビュー・品質の測り方 |
+| 70 クラウドとアーキテクチャ | 7 | 上流工程と非機能要件・アーキテクチャ設計・AWS（IAM・VPC・主要サービス・Well-Architected・DR）・Azure・資格試験（SAA / AZ） |
 | 00 マネジメント | 1 | 見積もり・進捗・品質・リスク・報告 |
 | 付録 | 3 | つまずき集・外部参照・質問のコツ |
 
-教材のコードは [dev-environment](https://github.com/shoyo-maya-bot/dev-environment) の `sample-app` を使います。
+教材のコードは [dev-environment](https://github.com/shoyo-maya-bot/dev-environment) の `sample-app` を使います（70 クラウドとアーキテクチャは `cloud/` の Terraform も読みます）。
 実案件では、30 実ソース読解の各章にある「実案件での読み替え」の表を使って実際のソースに当てはめてください。
 
 ## 書く・直す

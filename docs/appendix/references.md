@@ -67,6 +67,25 @@
 | 資料 | 内容 |
 |---|---|
 | [AWS SDK for Java 2.x 開発者ガイド](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/home.html) | `S3Client` などのクライアントの作り方、認証情報の扱い |
+| [AWS Well-Architected フレームワーク](https://docs.aws.amazon.com/ja_jp/wellarchitected/latest/framework/welcome.html) | 6 つの柱とベストプラクティス（[70-05](../70-cloud/70-05-aws-patterns.md)） |
+| [AWS アーキテクチャセンター](https://aws.amazon.com/jp/architecture/) | 構成図の参考例とリファレンスアーキテクチャ |
+| [AWS Certified Solutions Architect – Associate](https://aws.amazon.com/certification/certified-solutions-architect-associate/) | 試験の概要と試験ガイドへのリンク（[70-07](../70-cloud/70-07-certification.md)） |
+| [Terraform AWS プロバイダー](https://registry.terraform.io/providers/hashicorp/aws/latest/docs) | dev-environment の `cloud/` で使うリソースの書き方 |
+
+## Azure
+
+| 資料 | 内容 |
+|---|---|
+| [Azure のドキュメント（Microsoft Learn）](https://learn.microsoft.com/ja-jp/azure/) | 各サービスの入口 |
+| [Azure Well-Architected Framework](https://learn.microsoft.com/ja-jp/azure/well-architected/) | 5 つの柱とサービスごとのガイド（[70-06](../70-cloud/70-06-azure.md)） |
+| [AWS と Azure のサービスの比較](https://learn.microsoft.com/ja-jp/azure/architecture/aws-professional/) | AWS の経験者向けの対応表 |
+| [Microsoft Learn の資格](https://learn.microsoft.com/ja-jp/credentials/) | AZ-900 / AZ-104 / AZ-305 の試験ページと練習評価 |
+
+## 上流工程
+
+| 資料 | 内容 |
+|---|---|
+| [非機能要求グレード（IPA）](https://www.ipa.go.jp/archive/digital/iot-en-ci/jyouryuu/hikinou/ent03-b.html) | 非機能要件の 6 大項目と、項目ごとの段階（[70-01](../70-cloud/70-01-requirements.md)） |
 
 ## エディタ・AI 支援
 

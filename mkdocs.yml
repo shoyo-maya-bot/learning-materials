@@ -1,5 +1,5 @@
 site_name: 開発者向け教材（Java / Spring Boot）
-site_description: 新しく参加した開発者が、環境構築から実ソースの読解・API・非同期処理・設計品質までを順に学ぶ教材
+site_description: 新しく参加した開発者が、環境構築から実ソースの読解・API・非同期処理・設計品質・クラウドとアーキテクチャまでを順に学ぶ教材
 site_url: https://shoyo-maya-bot.github.io/learning-materials/
 repo_url: https://github.com/shoyo-maya-bot/learning-materials
 edit_uri: edit/main/docs/
@@ -127,6 +127,15 @@ nav:
       - 60-quality/60-01-design-doc.md
       - 60-quality/60-02-review.md
       - 60-quality/60-03-measure-quality.md
+  - 70 クラウドとアーキテクチャ:
+      - 70-cloud/index.md
+      - 70-cloud/70-01-requirements.md
+      - 70-cloud/70-02-architecture-basics.md
+      - 70-cloud/70-03-aws-foundation.md
+      - 70-cloud/70-04-aws-services.md
+      - 70-cloud/70-05-aws-patterns.md
+      - 70-cloud/70-06-azure.md
+      - 70-cloud/70-07-certification.md
   - 00 マネジメント:
       - 00-management/index.md
       - 00-management/00-01-project-management.md
