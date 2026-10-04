@@ -1,5 +1,9 @@
 # 20-15 JUnit 5 と AssertJ
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](../30-reading/index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - JUnit 5 の `@Test` と `@ParameterizedTest` で単体テストを書ける
     - AssertJ の `assertThat` / `assertThatThrownBy` で期待値を確かめられる

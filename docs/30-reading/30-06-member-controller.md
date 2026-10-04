@@ -1,5 +1,9 @@
 # 30-06 会員 API のコントローラ
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - `MemberController` の 2 つの API の URL・入力・出力・ステータスを、行を示して説明できる
     - `RegisterRequest` の入力チェックが、どの入力をどう弾くかを読める

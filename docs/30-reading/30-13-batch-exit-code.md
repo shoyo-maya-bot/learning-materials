@@ -1,5 +1,9 @@
 # 30-13 バッチの終了コード
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - 終了コードとは何か、0 / 4 / 8 の決まりが何を意味するかを説明できる
     - `ExitCodeGenerator` と `SpringApplication.exit` で、終了コードがプロセスに渡る流れを読める

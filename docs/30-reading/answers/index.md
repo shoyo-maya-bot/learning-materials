@@ -1,5 +1,8 @@
 # 30 実ソース読解 解答
 
+!!! note "修正後のコードと比べる"
+    解答は `exercise-base` ブランチのコードに対するものです。`main` での直し方は [修正後のコードと比べる](../index.md#exercise-base) の表と `git diff exercise-base main` で確かめてください。
+
 「30 実ソース読解」の各章末にある「演習」の解答です。
 
 !!! warning "先に自分で解いてください"

@@ -72,7 +72,42 @@
     - `dev-environment/local`: DB・S3 エミュレータ（`docker-compose.yml`）と、サンプルデータ
     - `ai-coding/samples/design-docs/batch/JOB0001_order-import.md`: 注文取込バッチの設計書（30-09〜30-13 で使います）
 
+## 読むのは `exercise-base` ブランチ {#exercise-base}
+
+sample-app には、教材の演習で見つけてもらうための **弱いところ** が 8 件あります。
+`main` ではこれらを直したので、教材の引用・行番号・演習は、直す前のコードを残した **`exercise-base` ブランチ** に合わせています。
+
+```bash
+cd /c/work/dev-environment
+git fetch origin
+git switch exercise-base        # 教材を進めるとき（演習はこちらで解く）
+git switch main                 # 修正後のコードを見るとき
+```
+
+!!! warning "演習の「小さな変更」は exercise-base の上で"
+    `exercise-base` に直接コミットしないでください。試すときは `git switch -c my-exercise exercise-base` で自分用のブランチを作ります。
+
+### 解いた後に: 修正後のコードと比べる
+
+演習を解いて解答を読んだら、`main` でどう直したかを見比べてください。
+自分の直し方と違っていても、間違いとは限りません。違いの理由を考えるのが、この節のいちばんの練習です。
+
+```bash
+git diff exercise-base main -- sample-app/src/main     # 本体の変更
+git diff exercise-base main -- sample-app/src/test     # 増えたテスト
+```
+
+| 弱いところ | 出てくる章 | `main` での直し方 |
+|---|---|---|
+| 同じメールアドレスの同時登録で 500 | 30-07、60-02 | 一意制約違反（`DuplicateKeyException`）を受け止め、409 + APPE0003 にする。事前の確認は残す（よくある重複を早く返すため） |
+| 存在しない会員 ID の行 1 件で、ファイル全体が取り消される | 30-08、30-11 | 登録の前に会員の存在を確かめ、その行だけ飛ばす（終了コード 4）。同じ会員は 1 回だけ確かめる |
+| 桁あふれの行 1 件で、ファイル全体が取り消される | 30-10、30-11 | `order_no`・`product_code` の 20 文字を `parse` で確かめる |
+| Karate の接続先（`baseUrl`）がテストに届かない | 30-02、30-15 | `build.gradle` で `-DbaseUrl` をテストの JVM に渡す。`local` 以外で未指定なら失敗させる |
+| ジョブ ID の誤り・未指定でも終了コード 0 | 30-09、30-13 | `BatchJobGuard` が、該当のジョブが無ければ終了コード 8 にする |
+| 想定外のエラーが `ErrorResponse` の形で返らない | 30-04、50-03 | 型違い・JSON の誤りは 400 + APPE0001、標準の 4xx は APPE0004、それ以外は 500 + APPE9999（中身はログだけ） |
+| 404 のメッセージで ID が「1,234」になる | 30-05 | ID を文字列にしてからメッセージに埋め込む |
+| バッチの異常終了ログにメッセージ ID が無い | 30-13、20-14 | バッチ用の ID（APPE0005〜0007）を足し、ログの先頭に付ける |
+
 !!! tip "行番号がずれていたら"
-    sample-app は改善のために更新されることがあります。
-    引用した行番号と実物がずれていたら、クラス名やメソッド名で検索して該当箇所を探してください。
-    ずれに気づいたら、教材の修正を提案してもらえると助かります。
+    `exercise-base` は教材に合わせて固定しているので、通常はずれません。
+    ずれていたら、`exercise-base` に切り替えているか確かめてください。それでもずれていたら、教材の修正を提案してもらえると助かります。

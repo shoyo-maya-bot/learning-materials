@@ -1,5 +1,9 @@
 # 20-09 REST コントローラ
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](../30-reading/index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - REST API の基本（URL・HTTP メソッド・ステータスコード・JSON）を説明できる
     - `@RestController` と `@GetMapping` / `@PostMapping` を使ったコントローラを書ける

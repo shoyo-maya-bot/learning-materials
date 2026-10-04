@@ -1,5 +1,9 @@
 # 50-01 REST の原則
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](../30-reading/index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - REST の「リソース」「表現」「ステートレス」を、会員 API を例に説明できる
     - 動詞中心の API と、リソース中心の API の違いを説明できる

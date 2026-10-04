@@ -41,6 +41,15 @@ PowerShell の場合は `./gradlew` を `.\gradlew.bat` に読み替えてくだ
 !!! info "事前に"
     [10-04](10-04-docker-local.md) の手順で、`docker compose ps` が `db` と `s3` の `healthy` を示していることを確認してください。
 
+### 0. 教材用のブランチに切り替える
+
+教材は、弱いところを直す前のコードを残した `exercise-base` ブランチで進めます（理由は [30 実ソース読解](../30-reading/index.md#exercise-base)）。
+
+```bash
+cd /c/work/dev-environment
+git switch exercise-base
+```
+
 ### 1. ビルドする
 
 ```bash

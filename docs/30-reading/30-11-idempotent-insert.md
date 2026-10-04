@@ -1,5 +1,9 @@
 # 30-11 冪等な登録
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - 冪等（べきとう）とは何か、バッチでなぜ大事かを説明できる
     - `insertIfAbsent` と `ON CONFLICT DO NOTHING` の組み合わせを読める

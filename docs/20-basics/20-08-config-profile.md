@@ -1,5 +1,9 @@
 # 20-08 設定ファイルとプロファイル
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](../30-reading/index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - `application.yml` と `application-<プロファイル>.yml` の関係を説明できる
     - プロファイルを指定してアプリを起動できる

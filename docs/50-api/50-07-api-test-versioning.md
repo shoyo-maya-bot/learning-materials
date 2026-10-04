@@ -1,5 +1,9 @@
 # 50-07 API テストと版の管理
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](../30-reading/index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - Karate で、API の結果（ステータス・応答の形・メッセージ ID）を確かめるシナリオを書ける
     - 「契約」としての API を確かめるテストの考え方を説明できる

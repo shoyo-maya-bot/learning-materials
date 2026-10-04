@@ -1,5 +1,9 @@
 # 20-01 Java の基本文法おさらい
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](../30-reading/index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - 基本型（プリミティブ型）と参照型の違いを説明できる
     - 文字列の比較に `==` ではなく `equals` を使う理由を説明できる

@@ -1,5 +1,9 @@
 # 30-04 共通の例外とエラー応答
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - `BusinessException` と `NotFoundException` の役割と継承関係を説明できる
     - `ApiExceptionHandler` が、どの例外をどの HTTP ステータスに変換するかを読める

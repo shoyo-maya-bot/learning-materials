@@ -1,5 +1,9 @@
 # 30-07 会員サービス
 
+!!! note "読むコードは `exercise-base` ブランチ"
+    この章の引用と行番号は、dev-environment の **`exercise-base` ブランチ**（弱いところを直す前の sample-app）に合わせています。
+    `main` は修正済みです。切り替え方と修正後との比べ方は [30 実ソース読解](index.md#exercise-base) を参照してください。
+
 !!! abstract "到達目標"
     - `MemberService` の `get` と `register` の処理を、1 行ずつ説明できる
     - メールアドレスの正規化と重複チェックの順番と、その理由を説明できる
