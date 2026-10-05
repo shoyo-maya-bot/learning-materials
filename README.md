@@ -31,3 +31,8 @@ mkdocs build --strict              # CI と同じ（リンク切れで失敗）
 ```
 
 main に push すると GitHub Pages に公開されます（初回だけ、リポジトリの Settings → Pages → Source を **GitHub Actions** にしてください）。
+
+## セキュリティ・ライセンス
+
+- 脆弱性を見つけたら、公開の Issue ではなく [SECURITY.md](SECURITY.md) の方法で知らせてください
+- ライセンスは [MIT](LICENSE) です
