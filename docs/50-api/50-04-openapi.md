@@ -158,6 +158,7 @@ sample-app には OpenAPI のファイルも、生成するライブラリもあ
 API ID は、Controller の Javadoc に書かれています。
 `sample-app/src/main/java/com/example/sample/member/MemberController.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 /** 会員 API（API ID: API0001 照会 / API0002 登録）. */
 @RestController
@@ -175,6 +176,7 @@ OpenAPI を書くなら、この API ID を `x-api-id` に入れます。
 桁や必須は、実装の入力チェックと一致させます。
 登録の入力は `MemberController` の `RegisterRequest` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 public record RegisterRequest(
         @NotBlank @Size(max = 50) String name, @NotBlank @Email @Size(max = 254) String email) {}

@@ -160,6 +160,7 @@ for (List<Order> chunk : chunks) {
 
 `sample-app/src/main/java/com/example/sample/member/MemberService.java` の 19〜33 行目です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 @Transactional(readOnly = true)
 public Member get(long id) {
@@ -187,6 +188,7 @@ public Member register(String name, String email) {
 
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java` の 25〜26 行目です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 @Transactional
 public ImportResult importLines(List<String> lines) {
@@ -199,6 +201,7 @@ public ImportResult importLines(List<String> lines) {
 
 呼び出し側は `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java` の 50〜59 行目です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @exercise-base -->
 ```java
 try {
     ImportResult r = service.importLines(fetcher.readLines(input.get(0)));

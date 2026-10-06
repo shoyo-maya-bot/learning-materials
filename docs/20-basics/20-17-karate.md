@@ -103,6 +103,7 @@ API テストは、同じ DB に対して何度も実行します。
 
 `sample-app/src/test/resources/karate/members.feature` の 1〜18 行目です。
 
+<!-- src: sample-app/src/test/resources/karate/members.feature @exercise-base -->
 ```gherkin
 Feature: 会員 API（API0001 照会 / API0002 登録）
 
@@ -130,6 +131,7 @@ Feature: 会員 API（API0001 照会 / API0002 登録）
 
 同じファイルの 20〜36 行目では、異常系を確かめています。
 
+<!-- src: sample-app/src/test/resources/karate/members.feature @exercise-base -->
 ```gherkin
   Scenario: 同じメールアドレスは登録できない
     Given path '/api/v1/members'
@@ -157,6 +159,7 @@ Feature: 会員 API（API0001 照会 / API0002 登録）
 
 `sample-app/src/test/resources/karate-config.js` です。
 
+<!-- src: sample-app/src/test/resources/karate-config.js @exercise-base -->
 ```javascript
 function fn() {
   var env = karate.env || 'local';
@@ -177,6 +180,7 @@ function fn() {
 
 `sample-app/src/test/java/karate/ApiKarateTest.java` の 14〜21 行目です。
 
+<!-- src: sample-app/src/test/java/karate/ApiKarateTest.java @exercise-base -->
 ```java
 @Tag("karate")
 class ApiKarateTest {
@@ -195,6 +199,7 @@ class ApiKarateTest {
 
 `sample-app/build.gradle` の 37〜56 行目です。
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 // 単体テスト（DB・外部サービス不要）。API テスト（Karate）は起動中のアプリが要るので除外する
 tasks.named('test') {

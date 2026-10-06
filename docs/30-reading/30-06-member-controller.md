@@ -60,6 +60,7 @@ REST コントローラの基本は [20-09 REST コントローラ](../20-basics
     サービスの単体テストでも確かめられなくなります。
 
 !!! success "良い例"
+    <!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java#L36-L40 @exercise-base -->
     ```java title="sample-app/src/main/java/com/example/sample/member/MemberController.java" linenums="36"
         @PostMapping
         public ResponseEntity<Member> register(@Valid @RequestBody RegisterRequest req) {
@@ -75,6 +76,7 @@ REST コントローラの基本は [20-09 REST コントローラ](../20-basics
 
 ### クラスの宣言とコンストラクタ（16〜25 行目）
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java#L16-L25 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberController.java" linenums="16"
 /** 会員 API（API ID: API0001 照会 / API0002 登録）. */
 @RestController
@@ -95,6 +97,7 @@ public class MemberController {
 
 ### 登録の入力（27〜29 行目）
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java#L27-L29 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberController.java" linenums="27"
     /** 登録の入力. */
     public record RegisterRequest(
@@ -121,6 +124,7 @@ public class MemberController {
 
 ### 照会（31〜34 行目）
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java#L31-L34 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberController.java" linenums="31"
     @GetMapping("/{id}")
     public Member get(@PathVariable("id") long id) {
@@ -143,6 +147,7 @@ public class MemberController {
 
 ### テスト
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java#L24-L35 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java" linenums="24"
     @BeforeEach
     void setUp() {

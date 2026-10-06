@@ -135,6 +135,7 @@ private から外に出る必要があるとき（OS の更新、イメージの
 
 `cloud/modules/network/main.tf` は、2 つの AZ に public と private のサブネットを 1 つずつ作ります。
 
+<!-- src: cloud/modules/network/main.tf#L6-L32 @main -->
 ```hcl title="cloud/modules/network/main.tf（6〜32 行目）"
 locals {
   azs = slice(data.aws_availability_zones.this.names, 0, 2)
@@ -179,6 +180,7 @@ ECS のサービスも `assign_public_ip = false` で、外から直接は届き
 
 `cloud/modules/ecs-service/main.tf` は、ECS のタスクに 2 種類のロールを作ります。
 
+<!-- src: cloud/modules/ecs-service/main.tf#L29-L33,L55-L59 @main -->
 ```hcl title="cloud/modules/ecs-service/main.tf（29〜33 行目、55〜59 行目）"
 # イメージ取得・ログ出力・シークレット読み出し用（ECS が使う）
 resource "aws_iam_role" "execution" {
@@ -200,6 +202,7 @@ resource "aws_iam_role" "task" {
 
 アプリ側の受け取り方は、`sample-app/src/main/java/com/example/sample/order/batch/S3Config.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/S3Config.java#L29-L36 @main -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/S3Config.java（29〜36 行目）"
         S3ClientBuilder b = S3Client.builder().region(Region.of(region));
         if (endpoint.isBlank()) {
@@ -217,6 +220,7 @@ resource "aws_iam_role" "task" {
 
 ### セキュリティグループで「アプリからだけ」DB に入れる
 
+<!-- src: cloud/modules/aurora-postgres/main.tf#L13-L20 @main -->
 ```hcl title="cloud/modules/aurora-postgres/main.tf（13〜20 行目）"
 resource "aws_vpc_security_group_ingress_rule" "from_app" {
   for_each                     = toset(var.allowed_security_group_ids)

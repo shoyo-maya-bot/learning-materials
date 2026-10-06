@@ -172,6 +172,7 @@ flowchart LR
 
 再試行の設定は、`cloud/modules/batch-workflow/main.tf` にあります。
 
+<!-- src: cloud/modules/batch-workflow/main.tf#L66-L71 @main -->
 ```hcl title="cloud/modules/batch-workflow/main.tf（66〜71 行目）"
         Retry = [{
           ErrorEquals     = ["ECS.AmazonECSException"]
@@ -188,6 +189,7 @@ JOB0001 は登録済みの注文番号を飛ばすので、やり直しても二
 一方で、単一障害点も残っています。
 `cloud/modules/network/main.tf` の NAT ゲートウェイです。
 
+<!-- src: cloud/modules/network/main.tf#L61-L66 @main -->
 ```hcl title="cloud/modules/network/main.tf（61〜66 行目）"
 resource "aws_nat_gateway" "this" {
   count         = var.enable_nat_gateway ? 1 : 0

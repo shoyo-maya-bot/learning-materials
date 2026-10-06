@@ -192,6 +192,7 @@ API もバッチも、1 つのスレッドで順に処理する同期処理で�
 注文ファイル取込（JOB0001）は、API ではなくバッチとして動きます。
 バッチは `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @exercise-base -->
 ```java
 @Component
 @ConditionalOnProperty(name = "app.batch.job", havingValue = "JOB0001")
@@ -201,6 +202,7 @@ public class OrderImportJob implements ApplicationRunner, ExitCodeGenerator {
 クラウドでは、このバッチを定刻に起動します。
 構成は `dev-environment` の `cloud/modules/batch-workflow/main.tf` にあります。
 
+<!-- src: cloud/modules/batch-workflow/main.tf @exercise-base -->
 ```hcl
 resource "aws_scheduler_schedule" "this" {
   count                        = var.schedule_expression == null ? 0 : 1

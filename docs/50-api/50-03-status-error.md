@@ -113,6 +113,7 @@ Controller や Service は例外を投げるだけにし、ステータスの決
 
 エラー応答の形は `sample-app/src/main/java/com/example/sample/common/ErrorResponse.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ErrorResponse.java @exercise-base -->
 ```java
 public record ErrorResponse(String messageId, String message, List<String> details) {}
 ```
@@ -125,6 +126,7 @@ public record ErrorResponse(String messageId, String message, List<String> detai
 
 例外とステータスの対応は `sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java` にあります。
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java @exercise-base -->
 ```java
 @ExceptionHandler(NotFoundException.class)
 public ResponseEntity<ErrorResponse> notFound(NotFoundException e) {
@@ -152,12 +154,14 @@ Spring は、投げられた例外に最も近い型のハンドラを選ぶの�
 
 文言は `body` メソッドで、メッセージ ID をキーに `messages.properties` から引いています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java @exercise-base -->
 ```java
 String text = messages.getMessage(id, args, id, Locale.JAPANESE);
 ```
 
 `sample-app/src/main/resources/messages.properties` の該当行です。
 
+<!-- src: sample-app/src/main/resources/messages.properties @exercise-base -->
 ```properties
 APPE0001=入力内容に誤りがあります。
 APPE0002=会員が見つかりません（会員ID: {0}）。

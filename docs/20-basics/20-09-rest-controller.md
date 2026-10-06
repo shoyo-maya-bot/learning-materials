@@ -110,6 +110,7 @@ Spring がこれを肩代わりするので、コントローラは「どの URL
 
 `sample-app/src/main/java/com/example/sample/member/MemberController.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 /** 会員 API（API ID: API0001 照会 / API0002 登録）. */
 @RestController
@@ -148,6 +149,7 @@ public class MemberController {
 
 `sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java @exercise-base -->
 ```java
 @ExceptionHandler(NotFoundException.class)
 public ResponseEntity<ErrorResponse> notFound(NotFoundException e) {
@@ -191,6 +193,7 @@ private ResponseEntity<ErrorResponse> body(HttpStatus status, String id, Object[
 
 `sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java`
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java @exercise-base -->
 ```java
 @Test
 void notFoundReturns404WithMessageId() throws Exception {

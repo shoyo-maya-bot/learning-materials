@@ -59,6 +59,7 @@ MyBatis の基本は [20-12 MyBatis](../20-basics/20-12-mybatis.md)、SQL は [2
     入力に `'` を含めると SQL の意味を書き換えられます（SQL インジェクション）。
 
 !!! success "良い例"
+    <!-- src: sample-app/src/main/resources/mapper/MemberMapper.xml#L9-L11 @exercise-base -->
     ```xml title="sample-app/src/main/resources/mapper/MemberMapper.xml" linenums="9"
       <select id="existsByEmail" resultType="boolean">
         SELECT EXISTS (SELECT 1 FROM member WHERE email = #{email})
@@ -76,6 +77,7 @@ SQL を読んだら、対象のテーブルの定義を開きます。
 
 ### 設定（application.yml 12〜15 行目）
 
+<!-- src: sample-app/src/main/resources/application.yml#L12-L15 @exercise-base -->
 ```yaml title="sample-app/src/main/resources/application.yml" linenums="12"
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -88,6 +90,7 @@ mybatis:
 
 ### 会員の Mapper
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberMapper.java#L6-L16 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberMapper.java" linenums="6"
 /** 会員テーブルの SQL（本体は resources/mapper/MemberMapper.xml）. */
 @Mapper
@@ -102,6 +105,7 @@ public interface MemberMapper {
 }
 ```
 
+<!-- src: sample-app/src/main/resources/mapper/MemberMapper.xml#L3-L16 @exercise-base -->
 ```xml title="sample-app/src/main/resources/mapper/MemberMapper.xml" linenums="3"
 <mapper namespace="com.example.sample.member.MemberMapper">
 
@@ -139,6 +143,7 @@ public interface MemberMapper {
 
 ### MemberRecord が可変である理由
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberRecord.java#L3-L8 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberRecord.java" linenums="3"
 /** 登録用の可変オブジェクト（MyBatis が採番した ID を書き戻すため）. */
 public class MemberRecord {
@@ -148,6 +153,7 @@ public class MemberRecord {
     private String email;
 ```
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberRecord.java#L19-L21 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberRecord.java" linenums="19"
     public void setId(Long id) {
         this.id = id;
@@ -161,6 +167,7 @@ MyBatis は、採番した ID を `setId` で書き戻します。
 
 ### 注文の Mapper
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderMapper.java#L9-L14 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/OrderMapper.java" linenums="9"
     /**
      * 注文番号が未登録なら登録する（再実行しても重複しない＝冪等）.
@@ -170,6 +177,7 @@ MyBatis は、採番した ID を `setId` で書き戻します。
     int insertIfAbsent(Order order);
 ```
 
+<!-- src: sample-app/src/main/resources/mapper/OrderMapper.xml#L5-L10 @exercise-base -->
 ```xml title="sample-app/src/main/resources/mapper/OrderMapper.xml" linenums="5"
   <!-- 注文番号が既にあれば何もしない（再実行しても重複しない） -->
   <insert id="insertIfAbsent">
@@ -188,6 +196,7 @@ MyBatis は、採番した ID を `setId` で書き戻します。
 
 ### テーブル定義と合わせて読む
 
+<!-- src: local/db/init/01_schema.sql @exercise-base -->
 ```sql title="local/db/init/01_schema.sql（dev-environment）"
 CREATE TABLE orders (
     order_no     VARCHAR(20) PRIMARY KEY,

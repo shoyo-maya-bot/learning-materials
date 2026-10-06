@@ -161,6 +161,7 @@ PR は小さいほど、早く・正確にレビューできます。
 
 `dev-environment/.github/workflows/ci.yml` の先頭です。
 
+<!-- src: .github/workflows/ci.yml @exercise-base -->
 ```yaml
 on:
   pull_request:
@@ -208,6 +209,7 @@ Windows と Linux・Mac で改行コードが混ざると、変更していな�
 
 `sample-app/build.gradle` の 1〜2 行目です。
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 // サンプルアプリ（API とバッチを 1 つのプロジェクトに同居させた最小構成）
 // 版はここで固定する。上げるときは CI が通ることを確認してから。

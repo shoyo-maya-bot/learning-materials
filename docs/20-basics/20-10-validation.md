@@ -121,6 +121,7 @@ API は画面を通さずに直接呼べるからです。
 `sample-app/src/main/java/com/example/sample/member/MemberController.java` の 27〜29 行目です。
 登録 API（API0002）の入力に、Bean Validation のアノテーションが付いています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 /** 登録の入力. */
 public record RegisterRequest(
@@ -132,6 +133,7 @@ public record RegisterRequest(
 
 同じファイルの 36〜37 行目で `@Valid` を付けています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 @PostMapping
 public ResponseEntity<Member> register(@Valid @RequestBody RegisterRequest req) {
@@ -139,6 +141,7 @@ public ResponseEntity<Member> register(@Valid @RequestBody RegisterRequest req) 
 
 違反時の応答は `sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java` の 37〜44 行目で作ります。
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java @exercise-base -->
 ```java
 @ExceptionHandler(MethodArgumentNotValidException.class)
 public ResponseEntity<ErrorResponse> invalid(MethodArgumentNotValidException e) {
@@ -157,6 +160,7 @@ public ResponseEntity<ErrorResponse> invalid(MethodArgumentNotValidException e) 
 
 `sample-app/src/main/java/com/example/sample/member/MemberService.java` の 24〜33 行目です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 @Transactional
 public Member register(String name, String email) {
@@ -175,6 +179,7 @@ public Member register(String name, String email) {
 1 行ずつ手で分解し、`OrderImportService.parse` で確かめています。
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java` の 55〜74 行目です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 static Order parse(String line) {
     String[] cols = line.split(",", -1);
@@ -207,10 +212,12 @@ static Order parse(String line) {
 
 `dev-environment/local/db/init/01_schema.sql` にも制約があります。
 
+<!-- src: local/db/init/01_schema.sql @exercise-base -->
 ```sql
     email      VARCHAR(254) NOT NULL UNIQUE,
 ```
 
+<!-- src: local/db/init/01_schema.sql @exercise-base -->
 ```sql
     quantity     INTEGER     NOT NULL CHECK (quantity BETWEEN 1 AND 999),
 ```

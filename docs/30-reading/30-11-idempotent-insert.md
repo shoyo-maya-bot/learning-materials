@@ -63,6 +63,7 @@ PostgreSQL では、`INSERT ... ON CONFLICT (列) DO NOTHING` と書きます。
 
 ### Mapper のインタフェース
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderMapper.java#L6-L15 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/OrderMapper.java（6〜15 行目）"
 @Mapper
 public interface OrderMapper {
@@ -80,6 +81,7 @@ public interface OrderMapper {
 
 ### SQL 本体
 
+<!-- src: sample-app/src/main/resources/mapper/OrderMapper.xml#L3-L11 @exercise-base -->
 ```xml title="sample-app/src/main/resources/mapper/OrderMapper.xml（3〜11 行目）"
 <mapper namespace="com.example.sample.order.OrderMapper">
 
@@ -99,6 +101,7 @@ public interface OrderMapper {
 
 `ON CONFLICT (order_no)` が効くのは、`order_no` に一意制約（ここでは主キー）があるからです。
 
+<!-- src: local/db/init/01_schema.sql#L9-L15 @exercise-base -->
 ```sql title="local/db/init/01_schema.sql（9〜15 行目）"
 CREATE TABLE orders (
     order_no     VARCHAR(20) PRIMARY KEY,
@@ -111,6 +114,7 @@ CREATE TABLE orders (
 
 ### 件数の数え方
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java#L46-L52 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/OrderImportService.java（46〜52 行目）"
             if (mapper.insertIfAbsent(order) == 1) {
                 imported++;
@@ -121,6 +125,7 @@ CREATE TABLE orders (
         return new ImportResult(imported, duplicated, List.copyOf(errors));
 ```
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/ImportResult.java#L12-L17 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/ImportResult.java（12〜17 行目）"
 public record ImportResult(int imported, int duplicated, List<String> errors) {
 

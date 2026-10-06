@@ -181,6 +181,7 @@ sample-app には、SQS を使うコードはありません。
 1 つ目は、SQS のキューそのものです。
 `dev-environment` の `cloud/modules/sqs-queue/main.tf` で、キューと DLQ を作っています。
 
+<!-- src: cloud/modules/sqs-queue/main.tf @exercise-base -->
 ```hcl
 resource "aws_sqs_queue" "this" {
   name                       = var.name
@@ -205,6 +206,7 @@ DLQ は `message_retention_seconds = 1209600`（14 日）で、調べる時間�
 2 つ目は、冪等な登録です。
 `sample-app/src/main/resources/mapper/OrderMapper.xml` の `insertIfAbsent` を見ます。
 
+<!-- src: sample-app/src/main/resources/mapper/OrderMapper.xml @exercise-base -->
 ```xml
 <!-- 注文番号が既にあれば何もしない（再実行しても重複しない） -->
 <insert id="insertIfAbsent">
@@ -218,6 +220,7 @@ DLQ は `message_retention_seconds = 1209600`（14 日）で、調べる時間�
 戻り値は登録した件数なので、既にあれば 0 になります。
 `OrderImportService.importLines` はこの値で「登録」と「重複」を数え分けています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 if (mapper.insertIfAbsent(order) == 1) {
     imported++;
@@ -233,6 +236,7 @@ if (mapper.insertIfAbsent(order) == 1) {
 
 再試行の実物は、`cloud/modules/batch-workflow/main.tf` の Step Functions にもあります。
 
+<!-- src: cloud/modules/batch-workflow/main.tf @exercise-base -->
 ```hcl
 Retry = [{
   ErrorEquals     = ["ECS.AmazonECSException"]

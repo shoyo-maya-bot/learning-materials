@@ -179,6 +179,7 @@ String label = switch (exitCode) {
 
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 if (lines.isEmpty() || !HEADER.equals(stripBom(lines.get(0)).trim())) {
     throw new IllegalArgumentException("見出し行が不正です（期待値: " + HEADER + "）");
@@ -192,6 +193,7 @@ CSV の 1 行目が見出しと一致するかを、定数 `HEADER` を左に置
 
 同じファイルの `parse` メソッドです。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 long quantity = parseLong(cols[3], "quantity");
 if (quantity < 1 || quantity > 999) {
@@ -208,6 +210,7 @@ return new Order(orderNo, memberId, product, (int) quantity);
 
 `sample-app/src/main/java/com/example/sample/member/MemberService.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 String normalized = email.trim().toLowerCase(java.util.Locale.ROOT);
 ```
@@ -219,6 +222,7 @@ String normalized = email.trim().toLowerCase(java.util.Locale.ROOT);
 
 `sample-app/src/main/java/com/example/sample/member/Member.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/Member.java @exercise-base -->
 ```java
 public record Member(Long id, String name, String email) {}
 ```

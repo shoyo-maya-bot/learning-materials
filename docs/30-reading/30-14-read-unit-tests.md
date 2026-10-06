@@ -56,6 +56,7 @@ sample-app の単体テストは 4 つのクラスにあり、`./gradlew test` �
 
 ### OrderImportServiceTest: ラムダで DB を置き換える
 
+<!-- src: sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java#L13-L16 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java（13〜16 行目）"
 class OrderImportServiceTest {
 
@@ -79,6 +80,7 @@ class OrderImportServiceTest {
 
 `parseRejects` は、1 つのメソッドで複数のケースを試す書き方です。
 
+<!-- src: sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java#L61-L70 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java（61〜70 行目）"
     @ParameterizedTest
     @CsvSource(delimiter = '|', value = {
@@ -98,6 +100,7 @@ class OrderImportServiceTest {
 
 ### OrderImportJobTest: 終了コードを確かめる
 
+<!-- src: sample-app/src/test/java/com/example/sample/order/OrderImportJobTest.java#L11-L20 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/order/OrderImportJobTest.java（11〜20 行目）"
 class OrderImportJobTest {
 
@@ -121,12 +124,13 @@ class OrderImportJobTest {
 
 ### MemberServiceTest: 手書きの偽物
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java#L16-L19,L37-L40 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java（16〜40 行目を抜粋）"
     /** DB を使わない差し替え用の Mapper. */
     static class InMemoryMapper implements MemberMapper {
         final Map<Long, Member> rows = new HashMap<>();
         long seq = 0;
-        // findById / existsByEmail / insert を Map で実装（21〜36 行目）
+        // 21〜36 行目: findById / existsByEmail / insert を Map で実装
     }
 
     private final InMemoryMapper mapper = new InMemoryMapper();
@@ -139,6 +143,7 @@ class OrderImportJobTest {
 
 ### MemberControllerTest: Spring を起動せずに HTTP を試す
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java#L24-L35 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java（24〜35 行目）"
     @BeforeEach
     void setUp() {

@@ -27,6 +27,7 @@
 pip install -r requirements.txt
 mkdocs serve                       # http://127.0.0.1:8000
 python scripts/check_chapters.py   # 章の構成（到達目標・必須の見出し・演習と解答）
+python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか
 mkdocs build --strict              # CI と同じ（リンク切れで失敗）
 ```
 

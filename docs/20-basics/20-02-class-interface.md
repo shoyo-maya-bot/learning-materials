@@ -131,6 +131,7 @@ Spring がこれを自動で行います。詳しくは [20-07 Spring Boot の�
 
 `sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java @exercise-base -->
 ```java
 /** 入力ファイルを行の並びとして読む（s3:// とローカルパスを同じ形で扱う）. */
 public interface FileFetcher {
@@ -146,6 +147,7 @@ S3 かローカルファイルかは、この型からは分かりません。�
 
 `sample-app/src/main/java/com/example/sample/order/batch/DefaultFileFetcher.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/DefaultFileFetcher.java @exercise-base -->
 ```java
 @Component
 public class DefaultFileFetcher implements FileFetcher {
@@ -174,9 +176,11 @@ public class DefaultFileFetcher implements FileFetcher {
 
 `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @exercise-base -->
 ```java
 private final FileFetcher fetcher;
 private final OrderImportService service;
+// ...
 
 public OrderImportJob(FileFetcher fetcher, OrderImportService service) {
     this.fetcher = fetcher;
@@ -190,6 +194,7 @@ public OrderImportJob(FileFetcher fetcher, OrderImportService service) {
 
 `sample-app/src/test/java/com/example/sample/order/OrderImportJobTest.java`
 
+<!-- src: sample-app/src/test/java/com/example/sample/order/OrderImportJobTest.java @exercise-base -->
 ```java
 OrderImportJob job = new OrderImportJob(loc -> List.of(OrderImportService.HEADER, "A1,1,P,1"), service);
 ```

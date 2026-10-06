@@ -159,12 +159,14 @@ sample-app には、指摘の記録や対応表はありません。
 測る仕組みとして実在するのは、カバレッジの計測です。
 `sample-app/build.gradle` を見ます。
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 plugins {
     id 'java'
     id 'jacoco'
 ```
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 tasks.named('test') {
     useJUnitPlatform {
@@ -174,6 +176,7 @@ tasks.named('test') {
 }
 ```
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 jacocoTestReport {
     reports {

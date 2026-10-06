@@ -15,6 +15,7 @@
 **CSV**（Comma-Separated Values）は、1 行に 1 件、項目をカンマで区切ったテキストです。
 JOB0001 の入力は、次のような CSV です（`local/data/orders.csv`）。
 
+<!-- src: local/data/orders.csv @exercise-base -->
 ```text title="local/data/orders.csv（全体）"
 order_no,member_id,product_code,quantity
 A0001,1,P-001,2
@@ -67,6 +68,7 @@ sample-app では、`OrderImportService` の `importLines` と `parse` がこの
 
 ### 見出し行の確認と、行ごとのループ
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java#L17-L17,L25-L45,L51-L53 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/OrderImportService.java（17 行目、25〜53 行目）"
     static final String HEADER = "order_no,member_id,product_code,quantity";
     // ...
@@ -107,6 +109,7 @@ sample-app では、`OrderImportService` の `importLines` と `parse` がこの
 
 ### 1 行の解析
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java#L55-L82 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/OrderImportService.java（55〜82 行目）"
     static Order parse(String line) {
         String[] cols = line.split(",", -1);
@@ -146,6 +149,7 @@ sample-app では、`OrderImportService` の `importLines` と `parse` がこの
 
 ### BOM の除去
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java#L84-L86 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/OrderImportService.java（84〜86 行目）"
     private static String stripBom(String s) {
         return s.startsWith("﻿") ? s.substring(1) : s;

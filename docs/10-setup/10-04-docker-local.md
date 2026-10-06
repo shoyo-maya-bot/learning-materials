@@ -80,6 +80,7 @@ cp .env.example .env            # PowerShell なら: Copy-Item .env.example .env
 
 `.env.example` の中身は次のとおりです。
 
+<!-- src: local/.env.example @main -->
 ```text
 # コピーして .env を作る（.env はコミットしない）
 DB_NAME=sampledb
@@ -162,6 +163,7 @@ AWS CLI は不要で、HTTP の PUT でアップロードします。
 
 `local/docker-compose.yml` の `db` サービスを読んでみます。
 
+<!-- src: local/docker-compose.yml @main -->
 ```yaml
   db:
     image: postgres:16
@@ -195,6 +197,7 @@ AWS CLI は不要で、HTTP の PUT でアップロードします。
 
 アプリ側は、`sample-app/src/main/resources/application.yml` で接続先を決めています。
 
+<!-- src: sample-app/src/main/resources/application.yml @main -->
 ```yaml
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/sampledb}

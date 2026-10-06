@@ -133,6 +133,7 @@ DB の列は `snake_case`（`product_code`）、Java は `camelCase`（`productC
 
 `sample-app/src/main/resources/application.yml` の 12〜15 行目です。
 
+<!-- src: sample-app/src/main/resources/application.yml @exercise-base -->
 ```yaml
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -147,6 +148,7 @@ mybatis:
 
 `sample-app/src/main/java/com/example/sample/member/MemberMapper.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberMapper.java @exercise-base -->
 ```java
 /** 会員テーブルの SQL（本体は resources/mapper/MemberMapper.xml）. */
 @Mapper
@@ -163,6 +165,7 @@ public interface MemberMapper {
 
 対応する `sample-app/src/main/resources/mapper/MemberMapper.xml` です。
 
+<!-- src: sample-app/src/main/resources/mapper/MemberMapper.xml @exercise-base -->
 ```xml
 <mapper namespace="com.example.sample.member.MemberMapper">
 
@@ -190,6 +193,7 @@ public interface MemberMapper {
 書き戻すには setter が要るため、登録用に可変のクラスを用意しています。
 `sample-app/src/main/java/com/example/sample/member/MemberRecord.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberRecord.java @exercise-base -->
 ```java
 /** 登録用の可変オブジェクト（MyBatis が採番した ID を書き戻すため）. */
 public class MemberRecord {
@@ -205,6 +209,7 @@ public class MemberRecord {
 `sample-app/src/main/java/com/example/sample/order/OrderMapper.java` は `insertIfAbsent(Order order)` だけを持ちます。
 XML では引数 `Order` の項目を `#{orderNo}`、`#{memberId}` のように参照しています。
 
+<!-- src: sample-app/src/main/resources/mapper/OrderMapper.xml @exercise-base -->
 ```xml
   <insert id="insertIfAbsent">
     INSERT INTO orders (order_no, member_id, product_code, quantity)
@@ -219,6 +224,7 @@ XML では引数 `Order` の項目を `#{orderNo}`、`#{memberId}` のように�
 
 `sample-app/build.gradle` の 14〜18 行目で `-parameters` を付けています。
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 tasks.withType(JavaCompile).configureEach {
     options.release = 17

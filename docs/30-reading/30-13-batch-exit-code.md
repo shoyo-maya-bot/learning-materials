@@ -66,6 +66,7 @@ JOB0001 の設計書 STEP3 は、終了コードを次のように決めてい�
 
 ### 終了コードの定義と決定
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java#L24-L28,L34-L34,L42-L42,L50-L51,L55-L65 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java（24〜34 行目、41〜65 行目を抜粋）"
 public class OrderImportJob implements ApplicationRunner, ExitCodeGenerator {
 
@@ -107,6 +108,7 @@ public class OrderImportJob implements ApplicationRunner, ExitCodeGenerator {
 
 ### プロセスへの受け渡し
 
+<!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java#L16-L21 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/SampleApplication.java（16〜21 行目）"
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = SpringApplication.run(SampleApplication.class, args);

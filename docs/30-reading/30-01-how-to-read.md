@@ -127,12 +127,14 @@ Copilot（コード生成・説明を行う AI 支援ツール）は、コード
 
 **1. 入口** は `MemberController.get` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java#L17-L19 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberController.java" linenums="17"
 @RestController
 @RequestMapping("/api/v1/members")
 public class MemberController {
 ```
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java#L31-L34 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberController.java" linenums="31"
     @GetMapping("/{id}")
     public Member get(@PathVariable("id") long id) {
@@ -144,6 +146,7 @@ public class MemberController {
 
 **2. 流れ** は、`MemberService.get` から `MemberMapper.findById` へ進みます。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java#L19-L22 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberService.java" linenums="19"
     @Transactional(readOnly = true)
     public Member get(long id) {
@@ -153,6 +156,7 @@ public class MemberController {
 
 `MemberMapper` はインタフェースで、SQL の本体は XML にあります。
 
+<!-- src: sample-app/src/main/resources/mapper/MemberMapper.xml#L5-L7 @exercise-base -->
 ```xml title="sample-app/src/main/resources/mapper/MemberMapper.xml" linenums="5"
   <select id="findById" resultType="com.example.sample.member.Member">
     SELECT id, name, email FROM member WHERE id = #{id}
@@ -162,6 +166,7 @@ public class MemberController {
 **3. データ** は `Member` です。
 項目は `id`、`name`、`email` の 3 つで、そのまま JSON のキーになります。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/Member.java#L10-L10 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/Member.java" linenums="10"
 public record Member(Long id, String name, String email) {}
 ```
@@ -173,6 +178,7 @@ public record Member(Long id, String name, String email) {}
 単体テスト `MemberControllerTest.notFoundReturns404WithMessageId`（51〜57 行目）と、
 API テスト `members.feature` の「存在しない会員は 404」（32〜36 行目）です。
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java#L51-L57 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java" linenums="51"
     @Test
     void notFoundReturns404WithMessageId() throws Exception {

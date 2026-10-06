@@ -65,6 +65,7 @@
     大文字・小文字の違うメールアドレスが、別のものとしてチェックを通り抜けます。
 
 !!! success "良い例"
+    <!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java#L26-L29 @exercise-base -->
     ```java title="sample-app/src/main/java/com/example/sample/member/MemberService.java" linenums="26"
             String normalized = email.trim().toLowerCase(java.util.Locale.ROOT);
             if (mapper.existsByEmail(normalized)) {
@@ -77,6 +78,7 @@
 
 ファイルは `sample-app/src/main/java/com/example/sample/member/MemberService.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java#L9-L34 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/member/MemberService.java" linenums="9"
 /** 会員の業務ロジック. */
 @Service
@@ -155,6 +157,7 @@ public class MemberService {
 
 `sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java` は、DB の代わりに `InMemoryMapper`（17〜37 行目）を使います。
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java#L31-L36 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java" linenums="31"
         @Override
         public int insert(MemberRecord member) {

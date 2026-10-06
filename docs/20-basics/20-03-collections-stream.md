@@ -132,6 +132,7 @@ Stream の中で外の変数を書き換えるのは避けます。
 
 `sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java @exercise-base -->
 ```java
 List<String> details = e.getBindingResult().getFieldErrors().stream()
         .map(f -> f.getField() + ": " + f.getDefaultMessage())
@@ -146,12 +147,14 @@ List<String> details = e.getBindingResult().getFieldErrors().stream()
 
 `sample-app/src/main/java/com/example/sample/member/MemberMapper.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberMapper.java @exercise-base -->
 ```java
 Optional<Member> findById(long id);
 ```
 
 `sample-app/src/main/java/com/example/sample/member/MemberService.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 return mapper.findById(id).orElseThrow(() -> new NotFoundException(MessageIds.MEMBER_NOT_FOUND, id));
 ```
@@ -164,6 +167,7 @@ return mapper.findById(id).orElseThrow(() -> new NotFoundException(MessageIds.ME
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java` の `importLines` は、
 Stream ではなく `for` 文で書かれています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 for (int i = 1; i < lines.size(); i++) {
     String line = lines.get(i);
@@ -183,6 +187,7 @@ return new ImportResult(imported, duplicated, List.copyOf(errors));
 
 `sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java`
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java @exercise-base -->
 ```java
 final Map<Long, Member> rows = new HashMap<>();
 // ...
@@ -194,6 +199,7 @@ DB の代わりに `Map` で会員を持ち、`anyMatch` でメールアドレ�
 `sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java` では、
 `Set<String> stored` の `add` が「新しく追加できたら `true`」を返す性質を使い、注文番号の重複を表しています。
 
+<!-- src: sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java @exercise-base -->
 ```java
 private final OrderImportService service = new OrderImportService(o -> stored.add(o.orderNo()) ? 1 : 0);
 ```

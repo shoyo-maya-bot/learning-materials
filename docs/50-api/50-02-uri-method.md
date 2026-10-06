@@ -102,6 +102,7 @@ Spring は `@PathVariable` の型（`long` など）に変換し、変換でき�
 
 `sample-app/src/main/java/com/example/sample/member/MemberController.java` の URI とメソッドを確認します。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 @RestController
 @RequestMapping("/api/v1/members")
@@ -128,6 +129,7 @@ public class MemberController {
 sample-app では、メールアドレスの重複を確かめることで二重登録を防いでいます。
 `sample-app/src/main/java/com/example/sample/member/MemberService.java` の `register` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 String normalized = email.trim().toLowerCase(java.util.Locale.ROOT);
 if (mapper.existsByEmail(normalized)) {
@@ -137,6 +139,7 @@ if (mapper.existsByEmail(normalized)) {
 
 DB にも一意制約があります（`dev-environment` の `local/db/init/01_schema.sql`）。
 
+<!-- src: local/db/init/01_schema.sql @exercise-base -->
 ```sql
 email      VARCHAR(254) NOT NULL UNIQUE,
 ```

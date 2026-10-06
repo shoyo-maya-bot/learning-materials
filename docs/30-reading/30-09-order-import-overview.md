@@ -86,7 +86,8 @@ JOB0001 の流れを、起動から終了まで並べると次のようになり
 
 ### (1) 起動クラス
 
-```java title="sample-app/src/main/java/com/example/sample/SampleApplication.java（13〜21 行目）"
+<!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java#L13-L22 @exercise-base -->
+```java title="sample-app/src/main/java/com/example/sample/SampleApplication.java（13〜22 行目）"
 @SpringBootApplication
 public class SampleApplication {
 
@@ -105,6 +106,7 @@ public class SampleApplication {
 
 ### (2) バッチ用の設定
 
+<!-- src: sample-app/src/main/resources/application-batch.yml @exercise-base -->
 ```yaml title="sample-app/src/main/resources/application-batch.yml（全体）"
 # バッチとして起動する（Web サーバーを立てず、ジョブが終わったら終了する）
 spring:
@@ -117,6 +119,7 @@ API とバッチは 1 つのプロジェクトに同居しています（`build.
 
 ### (3)(4)(7) ジョブのクラス
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java#L22-L24,L41-L60 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java（22〜60 行目を抜粋）"
 @Component
 @ConditionalOnProperty(name = "app.batch.job", havingValue = "JOB0001")

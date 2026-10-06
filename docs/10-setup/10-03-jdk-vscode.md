@@ -131,6 +131,7 @@ code --version
 
 `sample-app/build.gradle` で、Java の版と文字コードを指定しています。
 
+<!-- src: sample-app/build.gradle @main -->
 ```groovy
 tasks.withType(JavaCompile).configureEach {
     options.release = 17

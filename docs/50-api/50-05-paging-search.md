@@ -157,6 +157,7 @@ sample-app には、一覧 API・検索 API・ページングはありません�
 
 近い実物として、`sample-app/src/main/resources/mapper/MemberMapper.xml` の値の渡し方を見ます。
 
+<!-- src: sample-app/src/main/resources/mapper/MemberMapper.xml @exercise-base -->
 ```xml
 <select id="findById" resultType="com.example.sample.member.Member">
   SELECT id, name, email FROM member WHERE id = #{id}
@@ -173,6 +174,7 @@ sample-app には、一覧 API・検索 API・ページングはありません�
 一覧を足すときは、DB 側の準備も確かめます。
 `dev-environment` の `local/db/init/01_schema.sql` では、`member` の `id` が主キー、`email` が一意制約です。
 
+<!-- src: local/db/init/01_schema.sql @exercise-base -->
 ```sql
 CREATE TABLE member (
     id         BIGSERIAL PRIMARY KEY,

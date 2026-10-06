@@ -170,6 +170,7 @@ RPO が 1 時間なら、少なくとも 1 時間ごとにデータを別の場�
 dev-environment の `cloud/` は、sample-app を AWS で動かす構成です。
 環境ごとの違いが、非機能要件の違いとして読めます。
 
+<!-- src: cloud/environments/prod/main.tf#L2-L8 @main -->
 ```hcl title="cloud/environments/prod/main.tf（2〜8 行目）"
 locals {
   name               = "${var.system_name}-prod"
@@ -180,6 +181,7 @@ locals {
 }
 ```
 
+<!-- src: cloud/environments/dev1/main.tf#L2-L8 @main -->
 ```hcl title="cloud/environments/dev1/main.tf（2〜8 行目）"
 locals {
   name               = "${var.system_name}-dev1"
@@ -202,6 +204,7 @@ locals {
 
 RPO に関わる値は、DB のモジュールにあります。
 
+<!-- src: cloud/modules/aurora-postgres/variables.tf#L46-L49 @main -->
 ```hcl title="cloud/modules/aurora-postgres/variables.tf（46〜49 行目）"
 variable "backup_retention_days" {
   type    = number

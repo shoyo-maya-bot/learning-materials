@@ -131,6 +131,7 @@ sample-app のコードを、レビューの観点で読んでみます。
 1 つ目は、上の良い例で挙げた MUST の指摘です。
 `sample-app/src/main/java/com/example/sample/member/MemberService.java` の `register` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 @Transactional
 public Member register(String name, String email) {
@@ -163,6 +164,7 @@ quality-analytics の分類では B1（表記・体裁）に当たります。
 3 つ目は Q の例です。
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java` では、見出し行が不正なら `IllegalArgumentException` を投げます。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 if (lines.isEmpty() || !HEADER.equals(stripBom(lines.get(0)).trim())) {
     throw new IllegalArgumentException("見出し行が不正です（期待値: " + HEADER + "）");

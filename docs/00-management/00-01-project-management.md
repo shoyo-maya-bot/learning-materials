@@ -165,6 +165,7 @@ sample-app は小さなアプリですが、品質を測る仕組みの例がそ
 
 - `sample-app/build.gradle` の `jacocoTestReport` で、テストのたびにカバレッジの HTML と XML を出力します。XML はツールで集計に使えます
 
+<!-- src: sample-app/build.gradle @main -->
 ```groovy
 jacocoTestReport {
     reports {

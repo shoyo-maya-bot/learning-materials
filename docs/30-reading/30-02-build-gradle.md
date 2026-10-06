@@ -87,6 +87,7 @@ Spring Boot の依存は `io.spring.dependency-management` プラグインが、
 
 ### プラグイン（3〜8 行目）
 
+<!-- src: sample-app/build.gradle#L3-L8 @exercise-base -->
 ```groovy title="sample-app/build.gradle" linenums="3"
 plugins {
     id 'java'
@@ -106,6 +107,7 @@ plugins {
 
 ### コンパイル設定（13〜18 行目）
 
+<!-- src: sample-app/build.gradle#L13-L18 @exercise-base -->
 ```groovy title="sample-app/build.gradle" linenums="13"
 // 本番・CI は Java 17。ローカルが 21 でも 17 向けにコンパイルする（21 固有の API を使わせない）
 tasks.withType(JavaCompile).configureEach {
@@ -123,6 +125,7 @@ CI でも Java 17 を使っています（`dev-environment/.github/workflows/ci.
 
 ### 依存（24〜35 行目）
 
+<!-- src: sample-app/build.gradle#L24-L35 @exercise-base -->
 ```groovy title="sample-app/build.gradle" linenums="24"
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -154,6 +157,7 @@ PostgreSQL のドライバは `runtimeOnly` です。
 
 ### テストタスク（37〜56 行目）
 
+<!-- src: sample-app/build.gradle#L37-L56 @exercise-base -->
 ```groovy title="sample-app/build.gradle" linenums="37"
 // 単体テスト（DB・外部サービス不要）。API テスト（Karate）は起動中のアプリが要るので除外する
 tasks.named('test') {

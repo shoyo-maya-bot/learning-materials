@@ -114,6 +114,7 @@ assertThatThrownBy(() -> service.get(99))        // 例外が投げられる
 
 `sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java` の 42〜59 行目です。
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java @exercise-base -->
 ```java
 @Test
 void register_normalizesEmailAndAssignsId() {
@@ -143,6 +144,7 @@ void register_rejectsDuplicateEmailIgnoringCase() {
 
 `sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java` の 34〜52 行目です。
 
+<!-- src: sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java @exercise-base -->
 ```java
 @Test
 void rerunIsIdempotent() {
@@ -170,6 +172,7 @@ void badLinesAreReportedWithLineNumbersAndOthersContinue() {
 
 同じファイルの 61〜70 行目は、パラメータ化テストです。
 
+<!-- src: sample-app/src/test/java/com/example/sample/order/OrderImportServiceTest.java @exercise-base -->
 ```java
 @ParameterizedTest
 @CsvSource(delimiter = '|', value = {
@@ -197,6 +200,7 @@ void parseRejects(String line, String message) {
 
 `sample-app/build.gradle` の 38〜43 行目で、`test` の後に JaCoCo のレポートを作ります。
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 tasks.named('test') {
     useJUnitPlatform {

@@ -107,6 +107,7 @@ docker compose version
 - `sample-app/gradle/wrapper/gradle-wrapper.properties` の `distributionUrl` で Gradle 8.14.3 を指定しています
 - `sample-app/build.gradle` の `options.release = 17` で、手元の JDK が 21 でも Java 17 向けにコンパイルします
 
+<!-- src: sample-app/build.gradle @main -->
 ```groovy
 // 本番・CI は Java 17。ローカルが 21 でも 17 向けにコンパイルする（21 固有の API を使わせない）
 tasks.withType(JavaCompile).configureEach {

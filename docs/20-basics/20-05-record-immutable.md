@@ -126,12 +126,14 @@ public record OrderLine(String productCode, int quantity) {
 
 `sample-app/src/main/java/com/example/sample/member/Member.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/Member.java @exercise-base -->
 ```java
 public record Member(Long id, String name, String email) {}
 ```
 
 `sample-app/src/main/java/com/example/sample/order/Order.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/Order.java @exercise-base -->
 ```java
 public record Order(String orderNo, long memberId, String productCode, int quantity) {}
 ```
@@ -143,6 +145,7 @@ public record Order(String orderNo, long memberId, String productCode, int quant
 
 `sample-app/src/main/java/com/example/sample/order/ImportResult.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/ImportResult.java @exercise-base -->
 ```java
 public record ImportResult(int imported, int duplicated, List<String> errors) {
 
@@ -159,6 +162,7 @@ public record ImportResult(int imported, int duplicated, List<String> errors) {
 
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 return new ImportResult(imported, duplicated, List.copyOf(errors));
 ```
@@ -170,6 +174,7 @@ return new ImportResult(imported, duplicated, List.copyOf(errors));
 
 `sample-app/src/main/java/com/example/sample/common/ErrorResponse.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ErrorResponse.java @exercise-base -->
 ```java
 public record ErrorResponse(String messageId, String message, List<String> details) {}
 ```
@@ -183,6 +188,7 @@ API のエラー応答です。Spring が JSON に変換します。
 
 `sample-app/src/main/java/com/example/sample/member/MemberController.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 public record RegisterRequest(
         @NotBlank @Size(max = 50) String name, @NotBlank @Email @Size(max = 254) String email) {}
@@ -194,6 +200,7 @@ public record RegisterRequest(
 
 `sample-app/src/main/java/com/example/sample/common/BusinessException.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/BusinessException.java @exercise-base -->
 ```java
 this.args = args.clone();
 // ...
@@ -209,6 +216,7 @@ public Object[] getArgs() {
 
 `sample-app/src/main/java/com/example/sample/member/MemberRecord.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberRecord.java @exercise-base -->
 ```java
 /** 登録用の可変オブジェクト（MyBatis が採番した ID を書き戻すため）. */
 public class MemberRecord {
@@ -218,7 +226,7 @@ public class MemberRecord {
     public void setId(Long id) {
         this.id = id;
     }
-
+    // ...
     public Member toMember() {
         return new Member(id, name, email);
     }

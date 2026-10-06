@@ -103,6 +103,7 @@ Spring Boot のスターター（`spring-boot-starter-web` など）に版が書
 
 `sample-app/build.gradle`
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 plugins {
     id 'java'
@@ -117,6 +118,7 @@ plugins {
 - `org.springframework.boot`: `bootRun` や `bootJar` を足す
 - `io.spring.dependency-management`: Spring Boot に合う依存ライブラリの版をそろえる
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 // 本番・CI は Java 17。ローカルが 21 でも 17 向けにコンパイルする（21 固有の API を使わせない）
 tasks.withType(JavaCompile).configureEach {
@@ -131,6 +133,7 @@ tasks.withType(JavaCompile).configureEach {
 
 ### 依存関係
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -151,6 +154,7 @@ dependencies {
 
 ### test と karateTest
 
+<!-- src: sample-app/build.gradle @exercise-base -->
 ```groovy
 // 単体テスト（DB・外部サービス不要）。API テスト（Karate）は起動中のアプリが要るので除外する
 tasks.named('test') {
@@ -188,6 +192,7 @@ API テストはアプリの状態に左右されるため、省略させませ�
 
 `sample-app/gradle/wrapper/gradle-wrapper.properties`
 
+<!-- src: sample-app/gradle/wrapper/gradle-wrapper.properties @exercise-base -->
 ```properties
 distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip
 ```

@@ -139,6 +139,7 @@ README には、費用の抑え方として次のことも書かれています�
 
 API の台数が 0 のときにサービス自体を作らない工夫が、`cloud/modules/ecs-service/main.tf` にあります。
 
+<!-- src: cloud/modules/ecs-service/main.tf#L97-L103 @main -->
 ```hcl title="cloud/modules/ecs-service/main.tf（97〜103 行目）"
 resource "aws_ecs_service" "this" {
   count           = var.desired_count > 0 ? 1 : 0

@@ -72,6 +72,7 @@ Karate は、起動したアプリに外から要求を送るので、これら�
 
 ### Background とシナリオ 1
 
+<!-- src: sample-app/src/test/resources/karate/members.feature#L1-L18 @exercise-base -->
 ```gherkin title="sample-app/src/test/resources/karate/members.feature（1〜18 行目）"
 Feature: 会員 API（API0001 照会 / API0002 登録）
 
@@ -100,6 +101,7 @@ Feature: 会員 API（API0001 照会 / API0002 登録）
 
 ### シナリオ 2・3
 
+<!-- src: sample-app/src/test/resources/karate/members.feature#L20-L36 @exercise-base -->
 ```gherkin title="sample-app/src/test/resources/karate/members.feature（20〜36 行目）"
   Scenario: 同じメールアドレスは登録できない
     Given path '/api/v1/members'
@@ -126,6 +128,7 @@ Feature: 会員 API（API0001 照会 / API0002 登録）
 
 ### 接続先の設定
 
+<!-- src: sample-app/src/test/resources/karate-config.js @exercise-base -->
 ```javascript title="sample-app/src/test/resources/karate-config.js（全体）"
 function fn() {
   var env = karate.env || 'local';
@@ -143,6 +146,7 @@ Karate は、実行のはじめにこの関数を呼び、返したオブジェ�
 
 ### 実行の入口と Gradle のタスク
 
+<!-- src: sample-app/src/test/java/karate/ApiKarateTest.java#L14-L21 @exercise-base -->
 ```java title="sample-app/src/test/java/karate/ApiKarateTest.java（14〜21 行目）"
 @Tag("karate")
 class ApiKarateTest {
@@ -154,6 +158,7 @@ class ApiKarateTest {
 }
 ```
 
+<!-- src: sample-app/build.gradle#L37-L56 @exercise-base -->
 ```groovy title="sample-app/build.gradle（37〜56 行目）"
 // 単体テスト（DB・外部サービス不要）。API テスト（Karate）は起動中のアプリが要るので除外する
 tasks.named('test') {

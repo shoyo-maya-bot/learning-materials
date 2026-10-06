@@ -71,6 +71,7 @@ Spring Boot は、設定を次の順で重ねます。
     また、テストから `run` を呼ぶと、テストの JVM ごと終わってしまいます。
 
 !!! success "良い例"
+    <!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java#L16-L21 @exercise-base -->
     ```java title="sample-app/src/main/java/com/example/sample/SampleApplication.java" linenums="16"
         public static void main(String[] args) {
             ConfigurableApplicationContext ctx = SpringApplication.run(SampleApplication.class, args);
@@ -86,6 +87,7 @@ Spring Boot は、設定を次の順で重ねます。
 
 ### 起動クラス
 
+<!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java#L7-L14 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/SampleApplication.java" linenums="7"
 /**
  * サンプルアプリの起動クラス.
@@ -107,12 +109,14 @@ Web サーバーのスレッドが動き続けるので、プロセスは終わ�
 
 ### 終了コードを返す側
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java#L22-L24 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java" linenums="22"
 @Component
 @ConditionalOnProperty(name = "app.batch.job", havingValue = "JOB0001")
 public class OrderImportJob implements ApplicationRunner, ExitCodeGenerator {
 ```
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java#L62-L65 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java" linenums="62"
     @Override
     public int getExitCode() {
@@ -126,6 +130,7 @@ public class OrderImportJob implements ApplicationRunner, ExitCodeGenerator {
 
 ### 設定ファイル
 
+<!-- src: sample-app/src/main/resources/application.yml @exercise-base -->
 ```yaml title="sample-app/src/main/resources/application.yml"
 # 共通設定. 環境ごとの値は application-<プロファイル>.yml と環境変数で上書きする
 spring:
@@ -146,6 +151,7 @@ server:
   port: ${SERVER_PORT:8080}
 ```
 
+<!-- src: sample-app/src/main/resources/application-local.yml @exercise-base -->
 ```yaml title="sample-app/src/main/resources/application-local.yml"
 # ローカル開発（local/docker-compose.yml の DB と S3 エミュレータに接続）
 spring:
@@ -159,6 +165,7 @@ logging:
     com.example.sample: DEBUG
 ```
 
+<!-- src: sample-app/src/main/resources/application-batch.yml @exercise-base -->
 ```yaml title="sample-app/src/main/resources/application-batch.yml"
 # バッチとして起動する（Web サーバーを立てず、ジョブが終わったら終了する）
 spring:

@@ -61,6 +61,7 @@ sample-app では、取得をインタフェースの向こうに隠し、接続
 
 ### 約束（インタフェース）
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java#L6-L10 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java（6〜10 行目）"
 /** 入力ファイルを行の並びとして読む（s3:// とローカルパスを同じ形で扱う）. */
 public interface FileFetcher {
@@ -73,7 +74,8 @@ public interface FileFetcher {
 
 ### 実装
 
-```java title="sample-app/src/main/java/com/example/sample/order/batch/DefaultFileFetcher.java（17〜44 行目）"
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/DefaultFileFetcher.java#L17-L45 @exercise-base -->
+```java title="sample-app/src/main/java/com/example/sample/order/batch/DefaultFileFetcher.java（17〜45 行目）"
 @Component
 public class DefaultFileFetcher implements FileFetcher {
 
@@ -116,6 +118,7 @@ BOM は、ここでは取り除きません。取り除くのは `OrderImportSer
 
 ### 接続先と認証の切り替え
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/S3Config.java#L20-L39 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/S3Config.java（20〜39 行目）"
 @Configuration
 public class S3Config {
@@ -151,6 +154,7 @@ public class S3Config {
 
 `app.s3.endpoint` は、`local` プロファイルでだけ設定されます。
 
+<!-- src: sample-app/src/main/resources/application-local.yml#L5-L7 @exercise-base -->
 ```yaml title="sample-app/src/main/resources/application-local.yml（5〜7 行目）"
 app:
   s3:
@@ -159,6 +163,7 @@ app:
 
 ### ローカルの S3 エミュレータ
 
+<!-- src: local/docker-compose.yml#L25-L32 @exercise-base -->
 ```yaml title="local/docker-compose.yml（25〜32 行目を抜粋。「（省略）」の部分は実物を見てください）"
   s3:
     # S3 互換のエミュレータ。チームで別の製品を使う場合は .env の S3_EMULATOR_IMAGE で差し替える
@@ -175,6 +180,7 @@ app:
 
 ファイルを置くスクリプトは、AWS CLI を使わず、`curl` で PUT するだけです。
 
+<!-- src: local/scripts/upload-sample.sh#L5-L8 @exercise-base -->
 ```bash title="local/scripts/upload-sample.sh（5〜8 行目）"
 BUCKET="${S3_BUCKET:-sample-bucket}"
 PORT="${S3_PORT:-9090}"

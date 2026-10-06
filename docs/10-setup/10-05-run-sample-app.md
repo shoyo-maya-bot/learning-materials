@@ -198,6 +198,7 @@ echo $?        # PowerShell なら: $LASTEXITCODE
 
 起動クラス `sample-app/src/main/java/com/example/sample/SampleApplication.java` は、プロファイルで動きを変えています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java @main -->
 ```java
 public static void main(String[] args) {
     ConfigurableApplicationContext ctx = SpringApplication.run(SampleApplication.class, args);
@@ -212,18 +213,21 @@ public static void main(String[] args) {
 
 ジョブ本体は `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @main -->
 ```java
 @Component
 @ConditionalOnProperty(name = "app.batch.job", havingValue = "JOB0001")
-public class OrderImportJob implements ApplicationRunner, ExitCodeGenerator {
+public class OrderImportJob implements BatchJob, ApplicationRunner, ExitCodeGenerator {
 ```
 
 - `@ConditionalOnProperty`: `--app.batch.job=JOB0001` を渡したときだけ、このクラスが有効になります。API として起動したときは動きません
+- `BatchJob`: ジョブ ID（`JOB0001`）を返すバッチの共通インタフェースです。ジョブ ID の誤りや指定漏れは `BatchJobGuard` が見つけ、終了コード 8 にします
 - `ApplicationRunner`: 起動の最後に `run` メソッドが呼ばれます
 - `ExitCodeGenerator`: `getExitCode` の値が、`SpringApplication.exit` の戻り値（終了コード）になります
 
 テストの切り分けは `sample-app/build.gradle` にあります。
 
+<!-- src: sample-app/build.gradle @main -->
 ```groovy
 tasks.named('test') {
     useJUnitPlatform {

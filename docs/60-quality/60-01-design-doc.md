@@ -124,6 +124,7 @@ sample-app には設計書そのものは含まれていません。
 
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java` の Javadoc です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 /**
  * 注文ファイル取込（JOB0001）の業務ロジック.
@@ -137,6 +138,7 @@ sample-app には設計書そのものは含まれていません。
 
 `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java` には、終了コードが書かれています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @exercise-base -->
 ```java
  * <p>終了コード: 0 正常 / 4 形式エラーの行あり（取込は続行）/ 8 異常終了。実案件では運用設計の終了コード体系に合わせる。
 ```
@@ -144,6 +146,7 @@ sample-app には設計書そのものは含まれていません。
 整合の例として、数量の範囲を見ます。
 `OrderImportService.parse` の入力チェックは次のとおりです。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 if (quantity < 1 || quantity > 999) {
     throw new IllegalArgumentException("quantity は 1〜999 です（" + quantity + "）");
@@ -152,6 +155,7 @@ if (quantity < 1 || quantity > 999) {
 
 `dev-environment` の `local/db/init/01_schema.sql` の DB 定義は次のとおりです。
 
+<!-- src: local/db/init/01_schema.sql @exercise-base -->
 ```sql
 quantity     INTEGER     NOT NULL CHECK (quantity BETWEEN 1 AND 999),
 ```

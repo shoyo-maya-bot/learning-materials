@@ -128,6 +128,7 @@ private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
 `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java` の 43〜59 行目です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @exercise-base -->
 ```java
 List<String> input = args.getOptionValues("input");
 if (input == null || input.size() != 1) {
@@ -160,6 +161,7 @@ try {
 
 メッセージ ID の一覧は `sample-app/src/main/java/com/example/sample/common/MessageIds.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/MessageIds.java @exercise-base -->
 ```java
 public static final String INVALID_INPUT = "APPE0001";
 public static final String MEMBER_NOT_FOUND = "APPE0002";
@@ -175,6 +177,7 @@ public static final String IMPORT_LINE_SKIPPED = "APPW0001";
 
 `sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java` の 31〜35 行目です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java @exercise-base -->
 ```java
 @ExceptionHandler(BusinessException.class)
 public ResponseEntity<ErrorResponse> business(BusinessException e) {
@@ -191,6 +194,7 @@ public ResponseEntity<ErrorResponse> business(BusinessException e) {
 
 `sample-app/src/main/resources/application-local.yml` の 8〜10 行目です。
 
+<!-- src: sample-app/src/main/resources/application-local.yml @exercise-base -->
 ```yaml
 logging:
   level:

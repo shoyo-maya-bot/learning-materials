@@ -126,6 +126,7 @@ Bean は、既定ではアプリ全体で 1 つだけ作られます（シング
 
 `sample-app/src/main/java/com/example/sample/SampleApplication.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java @exercise-base -->
 ```java
 @SpringBootApplication
 public class SampleApplication {
@@ -151,6 +152,7 @@ MemberController ──> MemberService ──> MemberMapper
 
 `sample-app/src/main/java/com/example/sample/member/MemberController.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 private final MemberService service;
 
@@ -161,6 +163,7 @@ public MemberController(MemberService service) {
 
 `sample-app/src/main/java/com/example/sample/member/MemberService.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 private final MemberMapper mapper;
 
@@ -177,6 +180,7 @@ MyBatis の Spring Boot 連携が、SQL を実行する実装を作って Bean �
 
 `sample-app/src/main/java/com/example/sample/order/batch/S3Config.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/S3Config.java @exercise-base -->
 ```java
 @Configuration
 public class S3Config {
@@ -185,8 +189,8 @@ public class S3Config {
     public S3Client s3Client(
             @Value("${app.s3.region:ap-northeast-1}") String region,
             @Value("${app.s3.endpoint:}") String endpoint,
-            // ...
-    ) {
+            @Value("${app.s3.access-key:test}") String accessKey,
+            @Value("${app.s3.secret-key:test}") String secretKey) {
         S3ClientBuilder b = S3Client.builder().region(Region.of(region));
         // ...（エンドポイントの有無で接続先と認証情報を切り替える）
         return b.build();
@@ -203,6 +207,7 @@ public class S3Config {
 
 `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @exercise-base -->
 ```java
 @Component
 @ConditionalOnProperty(name = "app.batch.job", havingValue = "JOB0001")
@@ -219,6 +224,7 @@ API として起動したときは、このジョブは作られません。
 
 `sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java`
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberServiceTest.java @exercise-base -->
 ```java
 private final InMemoryMapper mapper = new InMemoryMapper();
 private final MemberService service = new MemberService(mapper);

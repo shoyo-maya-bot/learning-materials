@@ -72,6 +72,7 @@ grep -rn "APPE0002" src/test            # テストで確かめている場所
     文言を変えるたびにコードを探して直すことになります。
 
 !!! success "良い例"
+    <!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java#L27-L29 @exercise-base -->
     ```java title="sample-app/src/main/java/com/example/sample/member/MemberService.java" linenums="27"
             if (mapper.existsByEmail(normalized)) {
                 throw new BusinessException(MessageIds.EMAIL_ALREADY_USED, normalized);
@@ -84,6 +85,7 @@ grep -rn "APPE0002" src/test            # テストで確かめている場所
 
 ### 定数の一覧
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/MessageIds.java#L3-L18 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/common/MessageIds.java" linenums="3"
 /**
  * メッセージ ID の一覧（本文は messages.properties）.
@@ -108,6 +110,7 @@ public final class MessageIds {
 
 ### 本文
 
+<!-- src: sample-app/src/main/resources/messages.properties @exercise-base -->
 ```properties title="sample-app/src/main/resources/messages.properties"
 APPE0001=入力内容に誤りがあります。
 APPE0002=会員が見つかりません（会員ID: {0}）。
@@ -119,6 +122,7 @@ APPW0001=形式に誤りがある行を飛ばしました。
 
 ### Spring への登録
 
+<!-- src: sample-app/src/main/resources/application.yml#L5-L7 @exercise-base -->
 ```yaml title="sample-app/src/main/resources/application.yml" linenums="5"
   messages:
     basename: messages
@@ -137,6 +141,7 @@ ID の使われ方は、API とバッチで違います。
 | `ApiExceptionHandler.body` | 47 行目 | ID から本文を引き、`ErrorResponse` の `message` にする |
 | `OrderImportJob.run` | 45・49・52・53 行目 | ログの先頭に ID を付ける。本文はコードに直接書いている |
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java#L46-L49 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java" linenums="46"
     private ResponseEntity<ErrorResponse> body(HttpStatus status, String id, Object[] args, List<String> details) {
         String text = messages.getMessage(id, args, id, Locale.JAPANESE);
@@ -144,6 +149,7 @@ ID の使われ方は、API とバッチで違います。
     }
 ```
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java#L49-L49 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java" linenums="49"
         log.info("{} JOB0001 開始 input={}", MessageIds.IMPORT_STARTED, input.get(0));
 ```
@@ -173,6 +179,7 @@ MemberService.get の id（21 行目）
 
 `MemberControllerTest` は `messages.properties` を読まず、テスト用の本文を自分で登録しています。
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java#L26-L27 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java" linenums="26"
         StaticMessageSource messages = new StaticMessageSource();
         messages.addMessage("APPE0002", Locale.JAPANESE, "会員が見つかりません（会員ID: {0}）。");

@@ -122,6 +122,7 @@ SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 
 `sample-app/src/main/resources/application.yml`
 
+<!-- src: sample-app/src/main/resources/application.yml @exercise-base -->
 ```yaml
 # 共通設定. 環境ごとの値は application-<プロファイル>.yml と環境変数で上書きする
 spring:
@@ -151,6 +152,7 @@ server:
 
 `sample-app/src/main/resources/application-local.yml`
 
+<!-- src: sample-app/src/main/resources/application-local.yml @exercise-base -->
 ```yaml
 # ローカル開発（local/docker-compose.yml の DB と S3 エミュレータに接続）
 spring:
@@ -172,6 +174,7 @@ logging:
 
 `sample-app/src/main/resources/application-batch.yml`
 
+<!-- src: sample-app/src/main/resources/application-batch.yml @exercise-base -->
 ```yaml
 # バッチとして起動する（Web サーバーを立てず、ジョブが終わったら終了する）
 spring:
@@ -181,6 +184,7 @@ spring:
 
 `sample-app/src/main/java/com/example/sample/SampleApplication.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java @exercise-base -->
 ```java
 if (ctx.getEnvironment().matchesProfiles("batch")) {
     System.exit(SpringApplication.exit(ctx));
@@ -201,6 +205,7 @@ if (ctx.getEnvironment().matchesProfiles("batch")) {
 
 `sample-app/src/main/java/com/example/sample/order/batch/S3Config.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/S3Config.java @exercise-base -->
 ```java
 @Value("${app.s3.endpoint:}") String endpoint,
 // ...

@@ -110,6 +110,7 @@ API を設計するときは、まず「何を扱うか」を名詞で書き出�
 
 会員 API は `sample-app/src/main/java/com/example/sample/member/MemberController.java` です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 /** 会員 API（API ID: API0001 照会 / API0002 登録）. */
 @RestController
@@ -122,6 +123,7 @@ public class MemberController {
 
 照会と登録は、同じリソースにメソッドで操作を割り当てています。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java @exercise-base -->
 ```java
 @GetMapping("/{id}")
 public Member get(@PathVariable("id") long id) {
@@ -141,6 +143,7 @@ public ResponseEntity<Member> register(@Valid @RequestBody RegisterRequest req) 
 
 返す表現は `sample-app/src/main/java/com/example/sample/member/Member.java` の record です。
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/Member.java @exercise-base -->
 ```java
 public record Member(Long id, String name, String email) {}
 ```

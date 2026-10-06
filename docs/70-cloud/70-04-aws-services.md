@@ -137,6 +137,7 @@ dev-environment の `cloud/` には、同じ sample-app を動かす 2 つの構
 
 ### 簡易環境: EC2 と RDS
 
+<!-- src: cloud/simple/main.tf#L95-L109 @main -->
 ```hcl title="cloud/simple/main.tf（95〜109 行目）"
 resource "aws_db_instance" "db" {
   identifier                  = "${var.system_name}-postgres"
@@ -164,6 +165,7 @@ resource "aws_db_instance" "db" {
 
 EC2 には SSH の鍵を使わず、Session Manager で入ります。
 
+<!-- src: cloud/simple/main.tf#L69-L72,L79-L79,L86-L88 @main -->
 ```hcl title="cloud/simple/main.tf（69〜72 行目と、79〜88 行目の抜粋）"
 resource "aws_iam_role_policy_attachment" "ssm" {
   role       = aws_iam_role.web.name
@@ -185,6 +187,7 @@ resource "aws_instance" "web" {
 
 S3 のバケットは、公開の遮断・暗号化・バージョニングを有効にしています。
 
+<!-- src: cloud/modules/s3-bucket/main.tf#L7-L13,L24-L29 @main -->
 ```hcl title="cloud/modules/s3-bucket/main.tf（7〜13 行目、24〜29 行目）"
 resource "aws_s3_bucket_public_access_block" "this" {
   bucket                  = aws_s3_bucket.this.id
@@ -208,6 +211,7 @@ resource "aws_s3_bucket_versioning" "this" {
 
 SQS は、デッドレターキュー付きです。
 
+<!-- src: cloud/modules/sqs-queue/main.tf#L8-L16 @main -->
 ```hcl title="cloud/modules/sqs-queue/main.tf（8〜16 行目）"
 resource "aws_sqs_queue" "this" {
   name                       = var.name

@@ -109,6 +109,7 @@ try (BufferedReader reader = Files.newBufferedReader(path)) {
 
 `sample-app/src/main/java/com/example/sample/common/BusinessException.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/BusinessException.java @exercise-base -->
 ```java
 /** 業務エラー. メッセージ ID（messages.properties のキー）と埋め込み値を持つ. */
 public class BusinessException extends RuntimeException {
@@ -121,12 +122,13 @@ public class BusinessException extends RuntimeException {
         this.messageId = messageId;
         this.args = args.clone();
     }
-    // getMessageId() / getArgs()
+    // ...（getMessageId() / getArgs()）
 }
 ```
 
 `sample-app/src/main/java/com/example/sample/common/NotFoundException.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/NotFoundException.java @exercise-base -->
 ```java
 /** 対象データが存在しない. */
 public class NotFoundException extends BusinessException {
@@ -140,6 +142,7 @@ public class NotFoundException extends BusinessException {
 
 `sample-app/src/main/java/com/example/sample/member/MemberService.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/member/MemberService.java @exercise-base -->
 ```java
 if (mapper.existsByEmail(normalized)) {
     throw new BusinessException(MessageIds.EMAIL_ALREADY_USED, normalized);
@@ -152,6 +155,7 @@ if (mapper.existsByEmail(normalized)) {
 
 `sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java @exercise-base -->
 ```java
 @ExceptionHandler(NotFoundException.class)
 public ResponseEntity<ErrorResponse> notFound(NotFoundException e) {
@@ -173,6 +177,7 @@ public ResponseEntity<ErrorResponse> business(BusinessException e) {
 
 `sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java @exercise-base -->
 ```java
 List<String> readLines(String location) throws IOException;
 ```
@@ -181,6 +186,7 @@ List<String> readLines(String location) throws IOException;
 
 `sample-app/src/main/java/com/example/sample/order/OrderImportService.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/OrderImportService.java @exercise-base -->
 ```java
 private static long parseLong(String value, String name) {
     try {
@@ -200,6 +206,7 @@ private static long parseLong(String value, String name) {
 
 `sample-app/src/main/java/com/example/sample/order/batch/DefaultFileFetcher.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/DefaultFileFetcher.java @exercise-base -->
 ```java
 try (ResponseInputStream<GetObjectResponse> in = s3.getObject(req);
         BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
@@ -213,6 +220,7 @@ S3 からの入力を読み終えたら、例外の有無にかかわらず閉�
 
 `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java`
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @exercise-base -->
 ```java
 } catch (Exception e) {
     log.error("JOB0001 異常終了", e);

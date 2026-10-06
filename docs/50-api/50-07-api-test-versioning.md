@@ -120,6 +120,7 @@ GET /api/v2/members/{id}   ← 新しい契約
 
 API テストは `sample-app/src/test/resources/karate/members.feature` です。
 
+<!-- src: sample-app/src/test/resources/karate/members.feature @exercise-base -->
 ```gherkin
 Feature: 会員 API（API0001 照会 / API0002 登録）
 
@@ -133,6 +134,7 @@ Feature: 会員 API（API0001 照会 / API0002 登録）
 
 登録と照会のシナリオでは、応答の形を完全一致で確かめています。
 
+<!-- src: sample-app/src/test/resources/karate/members.feature @exercise-base -->
 ```gherkin
 Then status 201
 And match response == { id: '#number', name: '結合 テスト', email: '#(email)' }
@@ -140,6 +142,7 @@ And match response == { id: '#number', name: '結合 テスト', email: '#(email
 
 失敗の結果も、ステータスとメッセージ ID で確かめています。
 
+<!-- src: sample-app/src/test/resources/karate/members.feature @exercise-base -->
 ```gherkin
 Scenario: 同じメールアドレスは登録できない
   ...

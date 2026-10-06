@@ -147,6 +147,7 @@ dev-environment の `cloud/` は AWS 用ですが、対応表を使うと Azure 
 アプリのコードで変わるのは、主に外部サービスとの接続の部分です。
 sample-app では、S3 への接続が `FileFetcher` インタフェースの向こうに隠れています（[30-12](../30-reading/30-12-file-fetcher-s3.md)）。
 
+<!-- src: sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java#L6-L10 @main -->
 ```java title="sample-app/src/main/java/com/example/sample/order/batch/FileFetcher.java（6〜10 行目）"
 /** 入力ファイルを行の並びとして読む（s3:// とローカルパスを同じ形で扱う）. */
 public interface FileFetcher {

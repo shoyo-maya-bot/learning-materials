@@ -71,6 +71,7 @@ grep -rn "throw new .*Exception" src/main/java
     API ごとに応答の形がばらつき、メッセージ ID も付きません。
 
 !!! success "良い例"
+    <!-- src: sample-app/src/main/java/com/example/sample/member/MemberController.java#L31-L34 @exercise-base -->
     ```java title="sample-app/src/main/java/com/example/sample/member/MemberController.java" linenums="31"
         @GetMapping("/{id}")
         public Member get(@PathVariable("id") long id) {
@@ -84,6 +85,7 @@ grep -rn "throw new .*Exception" src/main/java
 
 ### 例外クラス
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/BusinessException.java#L3-L13 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/common/BusinessException.java" linenums="3"
 /** 業務エラー. メッセージ ID（messages.properties のキー）と埋め込み値を持つ. */
 public class BusinessException extends RuntimeException {
@@ -104,6 +106,7 @@ public class BusinessException extends RuntimeException {
 - `args.clone()`（12 行目、20 行目）は防御的コピーです。外から配列を書き換えられないようにします
 - `transient` は「直列化（バイト列への変換）の対象から外す」という印です。例外は直列化できる決まりですが、`Object[]` の中身が直列化できるとは限らないからです
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/NotFoundException.java#L3-L4 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/common/NotFoundException.java" linenums="3"
 /** 対象データが存在しない. */
 public class NotFoundException extends BusinessException {
@@ -114,6 +117,7 @@ public class NotFoundException extends BusinessException {
 
 ### エラー応答
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ErrorResponse.java#L5-L12 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/common/ErrorResponse.java" linenums="5"
 /**
  * API のエラー応答.
@@ -133,6 +137,7 @@ JSON にすると、例えば次の形になります。
 
 ### 例外ハンドラ
 
+<!-- src: sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java#L26-L49 @exercise-base -->
 ```java title="sample-app/src/main/java/com/example/sample/common/ApiExceptionHandler.java" linenums="26"
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> notFound(NotFoundException e) {
@@ -193,6 +198,7 @@ JSON にすると、例えば次の形になります。
 
 `MemberControllerTest` は、コントローラと例外ハンドラを組み合わせて確かめています。
 
+<!-- src: sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java#L31-L34 @exercise-base -->
 ```java title="sample-app/src/test/java/com/example/sample/member/MemberControllerTest.java" linenums="31"
         mvc = MockMvcBuilders.standaloneSetup(new MemberController(service))
                 .setControllerAdvice(new ApiExceptionHandler(messages))
