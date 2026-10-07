@@ -1,6 +1,5 @@
 """scripts/check_versions.py のテスト（仮の dev-environment・mkdocs.yml・章を作り、版のずれを検知できるか）."""
 
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -9,8 +8,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import check_versions as cv  # noqa: E402
+from _util import rmtree  # noqa: E402
 from check_code_quotes import Source  # noqa: E402
 
 BUILD = """plugins {
@@ -87,7 +88,7 @@ class CheckVersionsTest(unittest.TestCase):
         self.mkdocs.write_text(MKDOCS, encoding="utf-8")
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def write_repo(self, boot, gradle):
         (self.repo / "sample-app/build.gradle").write_text(BUILD % boot, encoding="utf-8")

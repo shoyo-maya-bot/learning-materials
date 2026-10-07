@@ -80,3 +80,6 @@ python scripts/check_code_quotes.py   # 引用したコードが dev-environment
 python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で確かめる
 python scripts/check_versions.py --repo-dir ../dev-environment      # 本文の版が exercise-base と一致するか
 ```
+
+Windows（PowerShell）でも同じコマンドで動きます（CI の `windows` ジョブで確認）。結果をファイルに保存したりパイプに渡したりするときは、
+先に `$env:PYTHONUTF8 = '1'` を実行すると、日本語の出力で止まりません。
