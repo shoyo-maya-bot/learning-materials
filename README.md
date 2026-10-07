@@ -11,7 +11,7 @@
 | 30 実ソース読解 | 15 + 解答 | sample-app の会員 API と注文取込バッチを 1 本ずつ読む。各章に演習、解答は別ページ |
 | 40 非同期処理 | 2 | スレッド・@Async・キュー（SQS）・再試行・冪等性 |
 | 50 API | 7 | REST 設計・ステータスとエラー応答・OpenAPI・ページング・認証と認可・テスト |
-| 60 設計品質 | 3 | 設計書の書き方・レビュー・品質の測り方 |
+| 60 設計品質 | 4 | 設計書の書き方・レビュー・品質の測り方・AI の出力を疑う（演習） |
 | 70 クラウドとアーキテクチャ | 7 | 上流工程と非機能要件・アーキテクチャ設計・AWS（IAM・VPC・主要サービス・Well-Architected・DR）・Azure・資格試験（SAA / AZ） |
 | 00 マネジメント | 1 | 見積もり・進捗・品質・リスク・報告 |
 | 付録 | 3 | つまずき集・外部参照・質問のコツ |
@@ -24,14 +24,25 @@
 執筆のルールと章のテンプレートは [CONTRIBUTING.md](CONTRIBUTING.md) にあります。
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -c constraints.txt   # 版は constraints.txt で固定（deps-lock.yml が自動で作る）
 mkdocs serve                       # http://127.0.0.1:8000
 python scripts/check_chapters.py   # 章の構成（到達目標・必須の見出し・演習と解答）
 python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか
+python scripts/check_versions.py   # 本文の版（mkdocs.yml の extra.versions）が exercise-base の実物と一致するか
 mkdocs build --strict              # CI と同じ（リンク切れで失敗）
 ```
 
+本文に書く版（Java・Spring Boot・Gradle など）は、演習で使う dev-environment の **`exercise-base` ブランチ** のものです。
+値は `mkdocs.yml` の `extra.versions` の 1 か所にまとめ、本文では `{{ versions.gradle }}` のように参照します（そのページの先頭に `render_macros: true`）。
+
 main に push すると GitHub Pages に公開されます（初回だけ、リポジトリの Settings → Pages → Source を **GitHub Actions** にしてください）。
+引用したコードや版が dev-environment の実物とずれていると公開しません。週 1 回の定期検査が失敗すると、Issue が自動で起票されます。
+
+## 変更点
+
+| 時期 | 変更 |
+|---|---|
+| 2026-10 | 本文の版を `mkdocs.yml` の `extra.versions` に集約（mkdocs-macros-plugin を追加）。引用・版の検査に通らないと公開しない |
 
 ## セキュリティ・ライセンス
 

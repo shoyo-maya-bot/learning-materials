@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # 20-06 Gradle（ビルドと依存関係）
 
 !!! note "読むコードは `exercise-base` ブランチ"
@@ -226,7 +230,7 @@ CI も常に失敗し、本当の失敗に誰も気づかなくなります。
 3. `spring-boot-starter-web` に版が書かれていないのに、版が決まるのはなぜですか。
 
     ??? note "答え"
-        `io.spring.dependency-management` プラグインが、Spring Boot 4.0.7 に合う版を決めているためです。
+        `io.spring.dependency-management` プラグインが、Spring Boot {{ versions.spring_boot }} に合う版を決めているためです。
 
 4. JDK 21 の PC で、Java 21 にしかない API を使うとどうなりますか。
 

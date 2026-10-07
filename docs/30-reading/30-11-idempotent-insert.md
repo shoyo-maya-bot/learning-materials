@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # 30-11 冪等な登録
 
 !!! note "読むコードは `exercise-base` ブランチ"
@@ -57,7 +61,7 @@ DB の一時的な障害、サーバーの再起動、入力ファイルの再�
     判断を DB の一意制約に任せるので、同時に動いても重複しません。
 
 PostgreSQL では、`INSERT ... ON CONFLICT (列) DO NOTHING` と書きます。
-詳しくは [PostgreSQL 公式: INSERT](https://www.postgresql.org/docs/16/sql-insert.html) の ON CONFLICT 句を見てください。
+詳しくは [PostgreSQL 公式: INSERT](https://www.postgresql.org/docs/{{ versions.postgres }}/sql-insert.html) の ON CONFLICT 句を見てください。
 
 ## サンプルアプリでは
 

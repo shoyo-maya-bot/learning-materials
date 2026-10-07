@@ -40,6 +40,23 @@ markdown_extensions:
 plugins:
   - search:
       lang: ja
+  # 本文の版を extra.versions の 1 か所にまとめ、{{ versions.xxx }} で参照する.
+  # {{ }} を書くページだけで展開する（先頭に render_macros: true）. Karate などの {{ }} を含むコードを壊さないため
+  - macros:
+      render_by_default: false
+      on_undefined: strict
+      on_error_fail: true
+# 本文に書く版. 演習で使う dev-environment の exercise-base ブランチのもの（main はもっと新しいことがある）.
+# scripts/check_versions.py（CI）が exercise-base の build.gradle・gradle-wrapper.properties・docker-compose.yml と照合する.
+extra:
+  versions:
+    branch: exercise-base
+    java: "17"
+    spring_boot: "4.0.7"
+    mybatis_starter: "4.0.1"
+    gradle: "8.14.3"
+    postgres: "16"
+    karate: "1.5.1"
 validation:
   links:
     not_found: warn
@@ -127,6 +144,7 @@ nav:
       - 60-quality/60-01-design-doc.md
       - 60-quality/60-02-review.md
       - 60-quality/60-03-measure-quality.md
+      - 60-quality/60-04-verify-ai-output.md
   - 70 クラウドとアーキテクチャ:
       - 70-cloud/index.md
       - 70-cloud/70-01-requirements.md

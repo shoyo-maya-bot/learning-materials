@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # 20-13 トランザクション
 
 !!! note "読むコードは `exercise-base` ブランチ"
@@ -277,4 +281,4 @@ Job は Spring が作った `service`（プロキシ）を呼ぶので、`@Trans
 - [ ] 同じクラス内の呼び出しで、トランザクションが効く前提になっていない
 - [ ] バッチのコミット単位が設計書どおりで、途中失敗後の再実行が安全である
 
-参考: [Spring Framework: 宣言的トランザクション](https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative.html)、[PostgreSQL 文書: トランザクション](https://www.postgresql.org/docs/16/tutorial-transactions.html)
+参考: [Spring Framework: 宣言的トランザクション](https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative.html)、[PostgreSQL 文書: トランザクション](https://www.postgresql.org/docs/{{ versions.postgres }}/tutorial-transactions.html)

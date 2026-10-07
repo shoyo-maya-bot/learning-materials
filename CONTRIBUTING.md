@@ -53,13 +53,30 @@ dev-environment のコードを引用したブロックの直前に、引用元�
 - title が `sample-app/`・`local/`・`cloud/` で始まるブロックは、コメントが無いと失敗する。説明用に書き換えた例（「例:」「悪い例」「修正案」）には付けない
 - コメントの付け方に迷ったら `python scripts/check_code_quotes.py --suggest` が、一致する引用元を提案する
 
+## 版の書き方
+
+本文（コードブロックの外）に版を直接書かず、`mkdocs.yml` の `extra.versions` を参照します。値は `exercise-base` ブランチのものです。
+
+```markdown
+---
+render_macros: true
+---
+
+| ビルド | Gradle {{ versions.gradle }}（Wrapper で固定） |
+```
+
+- `{{ versions.* }}` を使うページは、先頭に `render_macros: true` を書く（無いと `{{ }}` がそのまま表示される）
+- `scripts/check_versions.py`（CI）が、`extra.versions` と exercise-base の実ファイルを照合し、本文に直接書いた版（「Spring Boot 4.0」など）を検出する
+- コードブロックの中の版は、引用元のコメント（src:）で `check_code_quotes.py` が照合する
+
 ## 確認
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt -c constraints.txt
 mkdocs serve          # http://127.0.0.1:8000 でプレビュー
 mkdocs build --strict # リンク切れ・nav 漏れで失敗する（CI と同じ）
 python scripts/check_chapters.py   # 章の構成（必須の見出し）を検査
 python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか（git で取得する）
 python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で確かめる
+python scripts/check_versions.py --repo-dir ../dev-environment      # 本文の版が exercise-base と一致するか
 ```
