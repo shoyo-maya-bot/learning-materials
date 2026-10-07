@@ -98,7 +98,7 @@ $'\r': command not found
 **対処**:
 
 1. VS Code でファイルを開き、右下の「CRLF」をクリックして「LF」に変えて保存する
-2. リポジトリに `.gitattributes` があるなら、取り出し直す: `git rm --cached -r . && git reset --hard`（未コミットの変更が消えるので先に退避する）
+2. リポジトリに `.gitattributes` があるなら、取り出し直す: `git rm --cached -r .` の後に `git reset --hard`（1 行ずつ。未コミットの変更が消えるので先に退避する）
 3. 再発を防ぐには、`.gitattributes` で `*.sh text eol=lf` のように固定する
 
 詳しくは [10-02 Git と GitHub の準備](../10-setup/10-02-git.md) を見てください。
@@ -183,8 +183,9 @@ org.postgresql.util.PSQLException: Connection to localhost:5432 refused.
 
 **対処**: データを消して作り直します（ローカルのデータがすべて消えます）。
 
-```bash
-docker compose down -v && docker compose up -d --wait
+```powershell
+docker compose down -v
+docker compose up -d --wait
 ```
 
 その後、バッチの入力ファイルも置き直します（`./scripts/upload-sample.sh`）。

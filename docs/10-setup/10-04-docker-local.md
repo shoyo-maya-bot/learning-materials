@@ -153,7 +153,7 @@ AWS CLI は不要で、HTTP の PUT でアップロードします。
 | 状態を見る | `docker compose ps` |
 | ログを見る | `docker compose logs -f db` |
 | DB に入る | `docker compose exec db psql -U app -d sampledb` |
-| データを消して作り直す | `docker compose down -v && docker compose up -d --wait` |
+| データを消して作り直す | `docker compose down -v` の後に `docker compose up -d --wait`（1 行ずつ。PowerShell 5.1 は `&&` を使えない） |
 
 !!! warning "`down -v` はデータを消します"
     `-v` を付けると、DB のデータを保存しているボリュームも削除されます。

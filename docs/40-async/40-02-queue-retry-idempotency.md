@@ -58,12 +58,23 @@ sample-app の依存関係には SQS が無いので、使うときは `software
 例（送信）:
 
 ```java
-String body = "{\"orderNo\":\"" + orderNo + "\"}";
+// 送る内容を record で表し、JSON への変換は Jackson に任せる（objectMapper は Spring が用意したものを注入する）
+record OrderMessage(String orderNo) {}
+
+String body = objectMapper.writeValueAsString(new OrderMessage(orderNo));
 sqs.sendMessage(SendMessageRequest.builder()
         .queueUrl(queueUrl)
         .messageBody(body)
         .build());
 ```
+
+!!! failure "悪い例: JSON を文字列の連結で作る"
+    ```java
+    String body = "{\"orderNo\":\"" + orderNo + "\"}";   // まねしない
+    ```
+    `orderNo` に `"` や `\` が入っていると、壊れた JSON になります（受け手で解析に失敗する）。
+    値によっては、別の項目を紛れ込ませることもできてしまいます。
+    JSON は必ずライブラリ（Jackson など）で組み立ててください。
 
 例（受信して処理し、成功したら削除）:
 
