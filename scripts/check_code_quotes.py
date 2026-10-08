@@ -49,534 +49,69 @@
 from __future__ import annotations
 
 import argparse
-import json
-import re
 import shutil
-import subprocess
 import sys
-import tempfile
-from dataclasses import dataclass
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-DOCS = ROOT / "docs"
-PIN_FILE = ROOT / "dev-environment-pin.json"  # 引用元の SHA の固定（ここ 1 か所）
-REPO_URL = "https://github.com/shoyo-maya-bot/dev-environment.git"
-REFS = ("main", "exercise-base")
-SHA = re.compile(r"^[0-9a-f]{40}$")
-SOURCE_PREFIXES = ("sample-app/", "local/", "cloud/")
-
-MARKER = re.compile(
-    r"^\s*<!--\s*src:\s*(?P<path>[^\s#@]+)(?:#(?P<lines>[L0-9,\-]+))?(?:\s+@(?P<ref>[\w./-]+))?\s*-->\s*$"
+# 役割ごとのモジュール（scripts/codequotes/）. テストや check_versions.py のため、ここからも同じ名前で使えるようにする
+from codequotes.blocks import (  # noqa: F401
+    ELISION,
+    WILDCARD,
+    check_block,
+    check_title_lines,
+    find_run,
+    first_mismatch,
+    line_matches,
+    locate,
+    norm,
+    parse_ranges,
+    segments,
+    suggest,
 )
-MARKER_LOOSE = re.compile(r"^\s*<!--\s*src:")
-FENCE = re.compile(r"^(?P<indent>\s*)(?P<fence>`{3,}|~{3,})(?P<info>.*)$")
-TITLE = re.compile(r'title="(?P<title>[^"]*)"')
-TITLE_LINES = re.compile(r"(\d+)(?:〜(\d+))? 行目")
-LINENUMS = re.compile(r'linenums="(?P<n>\d+)"')
-RANGE = re.compile(r"^L(?P<a>\d+)(?:-L?(?P<b>\d+))?$")
-ELISION = re.compile(
-    r"^(//|#|--|<!--)?\s*(\.\.\.|…|（省略）|（中略）|\(省略\)|\(中略\))\s*(-->)?$"
-    r"|^(//|#|--)\s*(\.\.\.|…)\s*（.*）$"  # 「// ...（S3 から読む）」のように、飛ばした中身を括弧で添えたもの
-    r"|^(//|#|--)\s*\d+(〜\d+)?\s*行目\s*[:：]"  # 「// 46〜50 行目: 登録（30-11 で読む）」のような飛ばした箇所の説明
+from codequotes.line_refs import (  # noqa: F401
+    CLASS_TOKEN,
+    FILE_TOKEN,
+    JAVA_DECL,
+    LINE_REF,
+    LINE_REF_EXTS,
+    LINE_SPAN,
+    check_line_refs,
+    code_in,
+    hint_lines,
+    java_decl,
+    member_covers,
+    resolve_ref_file,
+    yaml_key_in,
 )
-WILDCARD = "（省略）"
-EXERCISE_NOTE = '!!! note "読むコードは `exercise-base` ブランチ"'
-
-# 本文の行番号の参照（check_line_refs）
-LINE_REF_EXTS = ("java", "xml", "yml", "yaml", "sql", "gradle", "feature", "js", "properties", "sh", "ps1", "tf", "hcl")
-LINE_REF = re.compile(
-    r"`(?P<tok>[^`\n]+)`(?:\s*の\s*|\s*（\s*|\s+)"
-    r"(?P<spec>\d+(?:〜\d+)?(?:\s*行目)?(?:\s*[・、]\s*\d+(?:〜\d+)?(?:\s*行目)?)*)\s*行目"
-    r"(?:\s*）?\s*の?\s*`(?P<code>[^`\n]+)`)?"
+from codequotes.markdown import (  # noqa: F401
+    DOCS,
+    EXERCISE_NOTE,
+    FENCE,
+    LINENUMS,
+    MARKER,
+    MARKER_LOOSE,
+    RANGE,
+    TITLE,
+    TITLE_LINES,
+    Block,
+    default_ref,
+    parse_blocks,
+    prose_lines,
 )
-LINE_SPAN = re.compile(r"(\d+)(?:〜(\d+))?")
-FILE_TOKEN = re.compile(r"^[\w./-]+\.(?:" + "|".join(LINE_REF_EXTS) + r")$")
-CLASS_TOKEN = re.compile(
-    r"^(?P<cls>[A-Z][A-Za-z0-9]*[a-z][A-Za-z0-9]*)(?:\.(?P<member>[A-Za-z_][A-Za-z0-9_]*)(?:\(\))?)?$"
+from codequotes.source import (  # noqa: F401
+    PIN_FILE,
+    REFS,
+    REPO_URL,
+    ROOT,
+    SHA,
+    SOURCE_PREFIXES,
+    Source,
+    add_source_args,
+    fetch,
+    load_pins,
+    open_source,
+    parse_overrides,
 )
-
-
-@dataclass
-class Block:
-    doc: Path
-    line: int  # フェンスの行（1 始まり）
-    info: str
-    body: list[str]
-    marker: str | None  # マーカーの行の文字列（無ければ None）
-    marker_line: int | None
-
-    @property
-    def title(self) -> str:
-        m = TITLE.search(self.info)
-        return m.group("title") if m else ""
-
-    @property
-    def where(self) -> str:
-        doc = self.doc.relative_to(DOCS.parent).as_posix() if DOCS.parent in self.doc.parents else self.doc
-        return f"{doc}:{self.line}"
-
-
-def parse_blocks(path: Path) -> list[Block]:
-    lines = path.read_text(encoding="utf-8").split("\n")
-    blocks = []
-    i = 0
-    while i < len(lines):
-        m = FENCE.match(lines[i])
-        if not m:
-            i += 1
-            continue
-        indent, fence, info = m.group("indent"), m.group("fence"), m.group("info")
-        start = i
-        body = []
-        i += 1
-        while i < len(lines):
-            close = FENCE.match(lines[i])
-            if close and close.group("fence").startswith(fence[0] * len(fence)) and not close.group("info").strip():
-                break
-            line = lines[i]
-            body.append(line[len(indent) :] if line.startswith(indent) else line.lstrip())
-            i += 1
-        # 直前の空でない行がマーカーか
-        j = start - 1
-        while j >= 0 and not lines[j].strip():
-            j -= 1
-        marker = lines[j] if j >= 0 and MARKER_LOOSE.match(lines[j]) else None
-        blocks.append(Block(path, start + 1, info, body, marker, j + 1 if marker else None))
-        i += 1
-    return blocks
-
-
-def norm(line: str) -> str:
-    return re.sub(r"\s+", " ", line).strip()
-
-
-def segments(body: list[str]) -> list[list[str]]:
-    """空行を除き、省略の印で区切った連続部分の一覧."""
-    out: list[list[str]] = [[]]
-    for line in body:
-        n = norm(line)
-        if not n:
-            continue
-        if ELISION.match(n):
-            out.append([])
-        else:
-            out[-1].append(n)
-    return [s for s in out if s]
-
-
-def line_matches(snippet: str, actual: str) -> bool:
-    if WILDCARD in snippet:
-        pattern = ".*?".join(re.escape(p) for p in snippet.split(WILDCARD))
-        return re.fullmatch(pattern, actual) is not None
-    return snippet == actual
-
-
-def find_run(seg: list[str], hay: list[str], start: int) -> int:
-    """hay[start:] の中で seg が連続して現れる位置（無ければ -1）."""
-    for k in range(start, len(hay) - len(seg) + 1):
-        if all(line_matches(s, hay[k + t]) for t, s in enumerate(seg)):
-            return k
-    return -1
-
-
-def parse_ranges(spec: str) -> list[tuple[int, int]]:
-    ranges = []
-    for part in spec.split(","):
-        m = RANGE.match(part.strip())
-        if not m:
-            raise ValueError(f"行の範囲 {part!r} が読めません（L10-L25 の形）")
-        a = int(m.group("a"))
-        b = int(m.group("b") or a)
-        if b < a:
-            raise ValueError(f"行の範囲 {part!r} が逆順です")
-        ranges.append((a, b))
-    return ranges
-
-
-def load_pins(path: Path = PIN_FILE) -> tuple[str, dict[str, str]]:
-    """dev-environment-pin.json を読み、（リポジトリの URL, {ブランチ名: SHA}）を返す."""
-    data = json.loads(path.read_text(encoding="utf-8"))
-    refs = data.get("refs") or {}
-    for name in REFS:
-        if name not in refs:
-            raise ValueError(f"{path.name}: refs.{name} がありません")
-    for name, sha in refs.items():
-        if not SHA.match(str(sha)):
-            raise ValueError(f"{path.name}: refs.{name} は 40 桁の SHA で書いてください（{sha}）")
-    return data.get("repo_url") or REPO_URL, dict(refs)
-
-
-def parse_overrides(items: list[str]) -> dict[str, str]:
-    """--ref main=HEAD の形を {ブランチ名: rev} にする."""
-    out = {}
-    for item in items:
-        name, sep, rev = item.partition("=")
-        if not sep or not name or not rev:
-            raise ValueError(f"--ref は 名前=rev の形で書いてください（{item}）")
-        out[name] = rev
-    return out
-
-
-class Source:
-    """dev-environment の clone から、ブランチごとのファイルを読む.
-
-    pins を渡すと、引用元コメントの @main などをその rev（固定した SHA）に読み替え、pins に無い名前は受け付けない.
-    pins が None なら、名前をそのままブランチとして読む（テスト用）.
-    """
-
-    def __init__(self, repo_dir: Path, pins: dict[str, str] | None = None):
-        self.repo_dir = repo_dir
-        self.pins = pins
-        self.cache: dict[tuple[str, str], str | None] = {}
-        self.rev_cache: dict[str, str | None] = {}
-        self.files_cache: dict[str, list[str]] = {}
-
-    def known(self, ref: str) -> bool:
-        return self.pins is None or ref in self.pins
-
-    def rev(self, ref: str) -> str | None:
-        if ref not in self.rev_cache:
-            self.rev_cache[ref] = self._resolve(ref)
-        return self.rev_cache[ref]
-
-    def _resolve(self, ref: str) -> str | None:
-        if not self.known(ref):
-            return None
-        target = self.pins[ref] if self.pins is not None else ref
-        if SHA.match(target) or target == "HEAD":
-            # HEAD は手元の作業中のコミット（refs/remotes/origin/HEAD = リモートの main と取り違えない）
-            cands: tuple[str, ...] = (target,)
-        else:
-            cands = (f"refs/remotes/origin/{target}", f"refs/heads/{target}", target)
-        for cand in cands:
-            r = subprocess.run(
-                ["git", "-C", str(self.repo_dir), "rev-parse", "--verify", "-q", f"{cand}^{{commit}}"],
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            if r.returncode == 0:
-                return r.stdout.strip()
-        return None
-
-    def read(self, ref: str, path: str) -> str | None:
-        key = (ref, path)
-        if key not in self.cache:
-            rev = self.rev(ref)
-            text = None
-            if rev:
-                r = subprocess.run(
-                    ["git", "-C", str(self.repo_dir), "show", f"{rev}:{path}"], capture_output=True, check=False
-                )
-                if r.returncode == 0:
-                    text = r.stdout.decode("utf-8", errors="replace").replace("\r\n", "\n")
-            self.cache[key] = text
-        return self.cache[key]
-
-    def files(self, ref: str) -> list[str]:
-        if ref not in self.files_cache:
-            rev = self.rev(ref)
-            if not rev:
-                return []
-            r = subprocess.run(
-                ["git", "-C", str(self.repo_dir), "ls-tree", "-r", "--name-only", rev],
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            self.files_cache[ref] = [p for p in r.stdout.split("\n") if p.startswith(SOURCE_PREFIXES)]
-        return self.files_cache[ref]
-
-
-def check_block(block: Block, src: Source) -> list[str]:
-    m = MARKER.match(block.marker or "")
-    if not m:
-        return [f"{block.where}: 引用元コメントの書き方が違います: {block.marker.strip()}"]
-    path, ref = m.group("path"), m.group("ref") or "main"
-    if not src.known(ref):
-        return [f"{block.where}: @{ref} は dev-environment-pin.json で固定していません（{', '.join(src.pins or [])}）"]
-    if src.rev(ref) is None:
-        want = f"（{src.pins[ref]}）" if src.pins else ""
-        return [f"{block.where}: {ref}{want} が dev-environment の clone にありません（git fetch が必要です）"]
-    text = src.read(ref, path)
-    if text is None:
-        return [f"{block.where}: {path} が dev-environment の {ref} にありません"]
-    file_lines = text.split("\n")
-    errs = []
-    title = block.title
-    if title.startswith(SOURCE_PREFIXES) and not title.startswith(path):
-        errs.append(f"{block.where}: title のパスとコメントのパス（{path}）が違います")
-    segs = segments(block.body)
-    if not segs:
-        return errs + [f"{block.where}: ブロックが空です"]
-    if m.group("lines"):
-        try:
-            ranges = parse_ranges(m.group("lines"))
-        except ValueError as e:
-            return errs + [f"{block.where}: {e}"]
-        ln = LINENUMS.search(block.info)
-        if ln and int(ln.group("n")) != ranges[0][0]:
-            errs.append(f'{block.where}: linenums="{ln.group("n")}" と範囲の始まり L{ranges[0][0]} が違います')
-        errs += check_title_lines(block, ranges, m.group("lines"))
-        if ranges[-1][1] > len(file_lines):
-            return errs + [
-                f"{block.where}: {path}@{ref} は {len(file_lines)} 行しかありません（範囲 {m.group('lines')}）"
-            ]
-        expected = [norm(x) for a, b in ranges for x in file_lines[a - 1 : b] if norm(x)]
-        got = [s for seg in segs for s in seg]
-        if len(got) != len(expected) or not all(line_matches(g, e) for g, e in zip(got, expected, strict=True)):
-            hint = locate(segs, file_lines)
-            errs.append(
-                f"{block.where}: {path}#{m.group('lines')} @{ref} と一致しません"
-                + (f"（ファイル内では {hint} 行目に同じ内容があります）" if hint else first_mismatch(got, expected))
-            )
-        return errs
-    hay = [norm(x) for x in file_lines]
-    hay_idx = [i for i, x in enumerate(hay) if x]
-    compact = [hay[i] for i in hay_idx]
-    pos = 0
-    for seg in segs:
-        k = find_run(seg, compact, pos)
-        if k < 0:
-            errs.append(f"{block.where}: {path} @{ref} に次の部分がありません: {seg[0][:60]}")
-            break
-        pos = k + len(seg)
-    return errs
-
-
-def check_title_lines(block: Block, ranges: list[tuple[int, int]], spec: str) -> list[str]:
-    """title の「（24〜34 行目、41〜65 行目）」と、コメントの範囲が食い違っていないか."""
-    if "行目" not in block.title:
-        return []
-    titled = [(int(a), int(b or a)) for a, b in TITLE_LINES.findall(block.title)]
-    inside = all(any(ta <= a and b <= tb for ta, tb in titled) for a, b in ranges)
-    covered = all(any(ta <= a and b <= tb for a, b in ranges) for ta, tb in titled)
-    if inside and covered:
-        return []
-    return [f"{block.where}: title の行番号（{block.title}）と範囲 {spec} が合いません"]
-
-
-def locate(segs: list[list[str]], file_lines: list[str]) -> str | None:
-    """内容がファイル内の別の行にあれば、その範囲（L 表記）を返す（行番号だけのずれの案内用）."""
-    hay = [norm(x) for x in file_lines]
-    idx = [i for i, x in enumerate(hay) if x]
-    compact = [hay[i] for i in idx]
-    pos, parts = 0, []
-    for seg in segs:
-        k = find_run(seg, compact, pos)
-        if k < 0:
-            return None
-        parts.append(f"L{idx[k] + 1}-L{idx[k + len(seg) - 1] + 1}")
-        pos = k + len(seg)
-    return ",".join(parts)
-
-
-def first_mismatch(got: list[str], expected: list[str]) -> str:
-    for i in range(max(len(got), len(expected))):
-        g = got[i] if i < len(got) else "<なし>"
-        e = expected[i] if i < len(expected) else "<なし>"
-        if not line_matches(g, e):
-            return f"\n    教材: {g[:80]}\n    実物: {e[:80]}"
-    return ""
-
-
-def default_ref(doc: Path) -> str:
-    """ページの既定のブランチ. 冒頭に exercise-base の注記がある章と、30 実ソース読解の解答は exercise-base."""
-    if EXERCISE_NOTE in doc.read_text(encoding="utf-8"):
-        return "exercise-base"
-    if doc.parent.name == "answers" and doc.parent.parent.name == "30-reading":
-        return "exercise-base"
-    return "main"
-
-
-def prose_lines(path: Path) -> list[tuple[int, str]]:
-    """コードブロックの外の行（行番号は 1 始まり）."""
-    out = []
-    fence: str | None = None
-    for i, line in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
-        m = FENCE.match(line)
-        if fence is None:
-            if m:
-                fence = m.group("fence")
-                continue
-            out.append((i, line))
-        elif m and m.group("fence").startswith(fence[0] * len(fence)) and not m.group("info").strip():
-            fence = None
-    return out
-
-
-def resolve_ref_file(tok: str, files: list[str]) -> tuple[str | None, str | None, str | None]:
-    """参照の `...` を（パス, メンバー名, 誤り）にする. 照合しないものは（None, None, None）."""
-    if FILE_TOKEN.match(tok):
-        if "/" in tok:
-            return (tok, None, None) if tok in files else (None, None, f"{tok} がありません")
-        hits = [f for f in files if f.rsplit("/", 1)[-1] == tok]
-        if len(hits) == 1:
-            return hits[0], None, None
-        if not hits:
-            return None, None, f"{tok} がありません"
-        return None, None, f"{tok} は {len(hits)} か所にあります（パスで書いてください）"
-    m = CLASS_TOKEN.match(tok)
-    if not m:
-        return None, None, None
-    hits = [f for f in files if f.endswith(f"/{m.group('cls')}.java")]
-    if len(hits) != 1:
-        return None, None, None  # dev-environment の外のクラス（SpringApplication など）は照合しない
-    return hits[0], m.group("member"), None
-
-
-def code_in(code: str, text: str) -> bool:
-    """`fetcher.readLines(...)` のような本文中のコードが text にあるか（空白は比べない. `...` は任意の文字列）."""
-    squash = re.compile(r"\s+")
-    parts = [re.escape(squash.sub("", p)) for p in re.split(r"\.\.\.|…", code)]
-    return re.search(".*?".join(parts), squash.sub("", text), re.S) is not None
-
-
-def check_line_refs(doc: Path, src: Source, ref: str | None = None) -> tuple[int, list[str]]:
-    """本文の「`File.java` N〜M 行目」を、固定した SHA の実物と照合する.（照合した件数, 誤り）を返す."""
-    ref = ref or default_ref(doc)
-    rel = doc.relative_to(DOCS.parent).as_posix() if DOCS.parent in doc.parents else str(doc)
-    if src.rev(ref) is None:
-        return 0, [f"{rel}: {ref} が dev-environment の clone にありません（git fetch が必要です）"]
-    files = src.files(ref)
-    checked, errs = 0, []
-    for lineno, line in prose_lines(doc):
-        for m in LINE_REF.finditer(line):
-            path, member, err = resolve_ref_file(m.group("tok"), files)
-            where = f"{rel}:{lineno}: `{m.group('tok')}` {m.group('spec')} 行目"
-            if err:
-                checked += 1
-                errs.append(f"{where}: {err}（@{ref}）")
-                continue
-            if path is None:
-                continue
-            checked += 1
-            file_lines = (src.read(ref, path) or "").split("\n")
-            spans = [(int(a), int(b or a)) for a, b in LINE_SPAN.findall(m.group("spec"))]
-            bad = [(a, b) for a, b in spans if b < a or a < 1 or b > len(file_lines)]
-            if bad:
-                errs.append(f"{where}: {path}@{ref} は {len(file_lines)} 行です（範囲の外）")
-                continue
-            text = "\n".join(x for a, b in spans for x in file_lines[a - 1 : b])
-            if not text.strip():
-                errs.append(f"{where}: {path}@{ref} の該当行が空行です")
-                continue
-            if member and not member_covers(member, spans, file_lines):
-                errs.append(f"{where}: {path}@{ref} のその行に `{member}` がありません{hint_lines(member, file_lines)}")
-                continue
-            code = m.group("code")
-            if code and not code_in(code, text) and not yaml_key_in(code, path, text):
-                errs.append(f"{where}: {path}@{ref} のその行に `{code}` がありません{hint_lines(code, file_lines)}")
-    return checked, errs
-
-
-JAVA_DECL = re.compile(
-    r"^\s*(?:@\w+(?:\([^)]*\))?\s+)*(?:(?:public|protected|private|static|final|abstract|synchronized|default)\s+)*"
-    r"(?:<[^>]+>\s+)?[\w.<>\[\],? ]+?\s+(?P<name>\w+)\s*\("
-)
-
-
-def java_decl(line: str) -> re.Match[str] | None:
-    """メソッド・コンストラクタの宣言の行（`{` で終わり、制御文・代入・throw new などでない）."""
-    if not line.rstrip().endswith("{") or "=" in line.split("(")[0]:
-        return None
-    if re.match(r"^\s*(?:if|for|while|switch|catch|else|try|do|return|throw|new|synchronized)\b", line):
-        return None
-    return JAVA_DECL.match(line)
-
-
-def member_covers(member: str, spans: list[tuple[int, int]], file_lines: list[str]) -> bool:
-    """`Class.member`（N〜M 行目）: その行に member があるか、その行が member のメソッドの中にある."""
-    for a, b in spans:
-        if any(re.search(rf"\b{re.escape(member)}\b", x) for x in file_lines[a - 1 : b]):
-            continue
-        # a 行目から上にさかのぼり、最初に見つかったメソッドの宣言が member なら、その中の行
-        enclosing = next(
-            (m.group("name") for x in reversed(file_lines[:a]) if (m := java_decl(x))),
-            None,
-        )
-        if enclosing != member:
-            return False
-    return True
-
-
-def yaml_key_in(code: str, path: str, text: str) -> bool:
-    """YAML の `spring.messages.basename` のような入れ子のキーは、最後の名前がその行にあればよい."""
-    if not path.endswith((".yml", ".yaml")) or not re.fullmatch(r"[\w-]+(?:\.[\w-]+)+", code):
-        return False
-    return re.search(rf"^\s*{re.escape(code.rsplit('.', 1)[-1])}\s*:", text, re.M) is not None
-
-
-def hint_lines(code: str, file_lines: list[str]) -> str:
-    """同じコードがある行の案内（行番号のずれを直すため）."""
-    hits = [str(i) for i, x in enumerate(file_lines, 1) if code_in(code, x)]
-    return f"（{'・'.join(hits[:5])} 行目にあります）" if hits else ""
-
-
-def suggest(block: Block, src: Source) -> str | None:
-    """コメントの無いブロックについて、一致する引用元（ファイルと行）を探す."""
-    segs = segments(block.body)
-    title = block.title
-    # 題名の無い短いブロックは偶然の一致が多いので提案しない
-    if not segs or sum(len(s) for s in segs) < (1 if title.startswith(SOURCE_PREFIXES) else 2):
-        return None
-    first = default_ref(block.doc)
-    refs = [first] + [r for r in REFS if r != first]
-    if title.startswith(SOURCE_PREFIXES) and "行目" in title:
-        # title に書いた行番号で一致するなら、それを使う（行を飛ばした抜粋にも対応）
-        path = title.split("（")[0].split(" ")[0]
-        spec = ",".join(f"L{a}-L{b or a}" for a, b in TITLE_LINES.findall(title))
-        for ref in refs:
-            marker = f"<!-- src: {path}#{spec} @{ref} -->"
-            trial = Block(block.doc, block.line, block.info, block.body, marker, None)
-            if not check_block(trial, src):
-                return marker
-    for ref in refs:
-        files = [f for f in src.files(ref) if not f.endswith(".md")]
-        if title.startswith(SOURCE_PREFIXES):
-            want = title.split("（")[0].split(" ")[0]
-            files = [f for f in files if f == want] or files
-        for f in files:
-            text = src.read(ref, f)
-            if text is None:
-                continue
-            hit = locate(segs, text.split("\n"))
-            if hit:
-                # 行番号を示しているブロック（linenums・title の「行目」）だけ範囲を書く。示していなければ範囲は省く
-                shows_lines = LINENUMS.search(block.info) or "行目" in title
-                return f"<!-- src: {f}#{hit} @{ref} -->" if shows_lines else f"<!-- src: {f} @{ref} -->"
-    return None
-
-
-def fetch(dest: Path, url: str, pins: dict[str, str]) -> None:
-    """固定した SHA だけを取得し、refs/remotes/origin/<名前> に置く（ブランチの最新は見ない）."""
-    subprocess.run(["git", "init", "-q", str(dest)], check=True)
-    specs = [f"+{sha}:refs/remotes/origin/{name}" for name, sha in pins.items()]
-    subprocess.run(["git", "-C", str(dest), "fetch", "-q", "--depth", "1", url, *specs], check=True)
-
-
-def open_source(repo_dir: Path | None, repo_url: str | None, overrides: list[str]) -> tuple[Source, Path | None]:
-    """引用元を用意する. 戻り値の 2 つ目は、後で消す一時ディレクトリ（--repo-dir のときは None）."""
-    url, pins = load_pins()
-    pins.update(parse_overrides(overrides))
-    if repo_dir:
-        return Source(repo_dir, pins), None
-    tmp = Path(tempfile.mkdtemp(prefix="dev-environment-"))
-    fetch(tmp, repo_url or url, {k: v for k, v in pins.items() if SHA.match(v)})
-    return Source(tmp, pins), tmp
-
-
-def add_source_args(ap: argparse.ArgumentParser) -> None:
-    ap.add_argument("--repo-dir", type=Path, help="dev-environment の clone（指定すると取得しない）")
-    ap.add_argument("--repo-url", help="取得元（既定は dev-environment-pin.json の repo_url）")
-    ap.add_argument(
-        "--ref",
-        action="append",
-        default=[],
-        metavar="名前=REV",
-        help="固定した SHA の代わりに比べる rev（例: --repo-dir ../dev-environment --ref main=HEAD）",
-    )
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -29,9 +29,9 @@ import shutil
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from check_code_quotes import FENCE, Source, add_source_args, open_source  # noqa: E402
+# scripts/ は実行したスクリプトの置き場所なので、そのまま import できる（sys.path は書き換えない）
+from codequotes.markdown import FENCE
+from codequotes.source import Source, add_source_args, open_source
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
