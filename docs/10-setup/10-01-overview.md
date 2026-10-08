@@ -45,7 +45,7 @@ flowchart LR
 チーム全員が同じ版・同じ構成で開発しないと、次のような問題が起きます。
 
 - 「自分の PC では動くのに、CI（自動ビルド）では失敗する」
-- 本番は Java 17 なのに、手元の 21 でしか動かない書き方をしてしまう
+- 本番は Java {{ versions.java }} なのに、手元の 21 でしか動かない書き方をしてしまう
 - DB の版が違い、SQL の結果が本番と変わる
 
 そこで、版をそろえやすい道具を選び、手順を共通にしています。
@@ -114,7 +114,7 @@ docker compose version
 版の固定は、sample-app のファイルにも書かれています。
 
 - `sample-app/gradle/wrapper/gradle-wrapper.properties` の `distributionUrl` で Gradle {{ versions.gradle }} を指定しています
-- `sample-app/build.gradle` の `options.release = 17` で、手元の JDK が 21 でも Java 17 向けにコンパイルします
+- `sample-app/build.gradle` の `options.release = {{ versions.java }}` で、手元の JDK が 21 でも Java {{ versions.java }} 向けにコンパイルします
 
 <!-- src: sample-app/build.gradle @main -->
 ```groovy
@@ -142,13 +142,13 @@ tasks.withType(JavaCompile).configureEach {
 
 1. ローカル開発環境とクラウド開発環境は、それぞれ何に使いますか。
 2. Gradle を個別にインストールしなくてよいのはなぜですか。
-3. 手元の JDK が 21 でも、Java 17 でしか使えない機能に縛られるのはどの設定のおかげですか。
+3. 手元の JDK が 21 でも、Java {{ versions.java }} でしか使えない機能に縛られるのはどの設定のおかげですか。
 4. Docker Desktop ではなく Rancher Desktop を使う理由は何ですか。
 
 ??? note "答え"
     1. ローカルはロジックの開発と単体テスト、クラウドは結合テストと疎通確認に使います。
     2. Gradle Wrapper（`gradlew`）が、`gradle-wrapper.properties` に書かれた版を自動で取得するからです。
-    3. `build.gradle` の `options.release = 17` です。
+    3. `build.gradle` の `options.release = {{ versions.java }}` です。
     4. Docker Desktop は条件によって有償になるためです。Rancher Desktop は無償で同じ `docker` コマンドを使えます。
 
 ## コードを読むときの確認観点

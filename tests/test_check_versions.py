@@ -118,8 +118,25 @@ class CheckVersionsTest(unittest.TestCase):
         table = "\n| 言語・FW | Java 17、Spring Boot 4.0、MyBatis |\n| ビルド | Gradle 8.14（Wrapper で固定） |\n"
         self.page(PAGE_OK + table)
         errors = self.run_all()
-        self.assertEqual(len(errors), 2, errors)
-        self.assertIn("Spring Boot 4.0", errors[0])
+        self.assertEqual(len(errors), 3, errors)  # Java 17・Spring Boot 4.0・Gradle 8.14
+        self.assertTrue(any("Spring Boot 4.0" in e for e in errors), errors)
+
+    def test_literal_karate_and_java_versions_are_reported(self):
+        # 後退: Karate と Java の版は本文に直接書いても検出されなかった
+        prose = (
+            "\nAPI テストは Karate 1.5 で書きます（`karate-junit5:1.5.1`）。\n"
+            '本番は Java 17 です。`options.release = 17` と `java-version: "17"` で固定しています。\n'
+        )
+        self.page(PAGE_OK + prose)
+        found = [e.split("（", 1)[1].split("）", 1)[0] for e in self.run_all()]
+        for want in ("Karate 1.5", "karate-junit5:1.5.1", "Java 17", "release = 17", 'java-version: "17'):
+            self.assertTrue(any(f.startswith(want) for f in found), (want, found))
+
+    def test_other_java_versions_and_macros_are_not_reported(self):
+        # 「手元の JDK 21」は比べるための別の版. {{ versions.java }} で書いたものは対象外
+        prose = "\n手元の JDK 21 でも Java {{ versions.java }} 向けに `release = {{ versions.java }}` で作ります。\n"
+        self.page(PAGE_OK + prose)
+        self.assertEqual(self.run_all(), [])
 
     def test_full_version_value_in_prose_is_reported(self):
         self.page(PAGE_OK + "\nSpring Boot の版（6 行目の 4.0.7）に合った版を決めます。\n")

@@ -23,7 +23,7 @@ sample-app の単体テストは 4 つのクラスにあり、`./gradlew test` �
 | `MemberControllerTest` | `MemberController` + `ApiExceptionHandler` | Spring を起動せず、MockMvc の単独構成で組み立てる |
 
 どのテストも、DB・S3・Spring の起動を使いません。
-`build.gradle` 37〜43 行目のコメントにも「単体テスト（DB・外部サービス不要）」とあります。
+`build.gradle` 37〜43 行目（`excludeTags 'karate'`）のコメントにも「単体テスト（DB・外部サービス不要）」とあります。
 
 ## なぜ必要か
 
@@ -187,7 +187,7 @@ class OrderImportJobTest {
 
 ## 理解度チェック
 
-1. `OrderImportServiceTest` 16 行目のラムダは、何の動きをまねていますか。
+1. `OrderImportServiceTest` 16 行目（`new OrderImportService(o -> ...)`）のラムダは、何の動きをまねていますか。
 
     ??? note "答え"
         `OrderMapper.xml` の `INSERT ... ON CONFLICT (order_no) DO NOTHING` です。

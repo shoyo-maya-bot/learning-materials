@@ -171,20 +171,30 @@ flowchart LR
 | 可用性 | prod では API と DB を 2 台にしている |
 
 再試行の設定は、ジョブフローの定義 `cloud/modules/batch-workflow/state_machine.tf` にあります（`main.tf` の Step Functions がこの定義を使います）。
+再試行の間隔と回数は、ファイルの冒頭の `locals` に名前を付けてまとめてあります。
 
-<!-- src: cloud/modules/batch-workflow/state_machine.tf#L47-L52 @main -->
-```hcl title="cloud/modules/batch-workflow/state_machine.tf（47〜52 行目）"
-        Retry = [{
-          ErrorEquals     = ["ECS.AmazonECSException"]
-          IntervalSeconds = 30
-          MaxAttempts     = 2
-          BackoffRate     = 2
-        }]
+<!-- src: cloud/modules/batch-workflow/state_machine.tf#L33-L37 @main -->
+```hcl title="cloud/modules/batch-workflow/state_machine.tf（33〜37 行目）"
+  run_job_retry = {
+    IntervalSeconds = 30
+    MaxAttempts     = 2
+    BackoffRate     = 2
+  }
 ```
+
+ジョブを起動する状態（`RunJob`）の `Retry` は、どのエラーで再試行するか（ECS の起動の失敗）を書き、この値を `merge` で足して使います。
+
+<!-- src: cloud/modules/batch-workflow/state_machine.tf#L72-L72 @main -->
+```hcl title="cloud/modules/batch-workflow/state_machine.tf（72 行目）"
+      Retry      = [merge({ ErrorEquals = ["ECS.AmazonECSException"] }, local.run_job_retry)]
+```
+
+値を 1 か所に置くのは、同じ値からジョブフロー全体の時間の上限（再試行で待つ分を足したもの）も計算しているためです。
 
 30 秒後、次は 60 秒後と、間隔を倍にしながら 2 回まで再試行します（指数バックオフ）。
 JOB0001 は登録済みの注文番号を飛ばすので、やり直しても二重登録になりません（[30-11](../30-reading/30-11-idempotent-insert.md)）。
 再試行と冪等性が、セットで設計されています。
+ジョブには時間の上限もあります。`RunJob` の `TimeoutSeconds`（既定は 1 時間）を超えると、ECS のタスクを止めて失敗として通知します。止まったままのジョブを残さないための設定です。
 同じ定義は、バッチの終了コードも見ています。0 なら成功、4（形式エラーの行あり）なら通知して成功扱い、8 などそれ以外なら通知して失敗にします（通知は通知用のトピックを作る設定のとき）。これで運用担当との約束（[70-01](70-01-requirements.md)）がジョブフローの結果にそのまま表れます。
 
 一方で、単一障害点も残っています。

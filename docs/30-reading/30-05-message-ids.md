@@ -214,7 +214,7 @@ MemberService.get の id（21 行目）
 **問 1.** `APPW0001` の `W` は何を表しますか。
 
 ??? note "答え"
-    種別の「警告」です（`MessageIds.java` 6 行目の Javadoc）。
+    種別の「警告」です（`MessageIds.java` 6 行目（`形式: APP + 種別`）の Javadoc）。
 
 **問 2.** `messages.properties` を Spring が読むための設定は、どのファイルのどこですか。
 

@@ -123,7 +123,7 @@ Feature: 会員 API（API0001 照会 / API0002 登録）
 ```
 
 - 29 行目: 409 は `ApiExceptionHandler.java` 31〜35 行目（`BusinessException` → `HttpStatus.CONFLICT`）から来ます
-- 30 行目: `APPE0003` は `MessageIds.EMAIL_ALREADY_USED`（`MessageIds.java` 12 行目）です
+- 30 行目: `APPE0003` は `MessageIds.EMAIL_ALREADY_USED`（`MessageIds.java` 12 行目（`EMAIL_ALREADY_USED`））です
 - 33 行目: 999999999 番の会員は無いという前提です。DB の初期データ（`local/db/init/02_data.sql`）は会員 2 件だけです
 
 ### 接続先の設定
@@ -183,8 +183,8 @@ tasks.register('karateTest', Test) {
 ```
 
 - `ApiKarateTest.java` 14 行目の `@Tag("karate")` が目印です
-- `build.gradle` 40 行目: `test` タスクは `karate` の目印が付いたテストを **除外** します
-- `build.gradle` 52 行目: `karateTest` タスクは、その目印が付いたテスト **だけ** を実行します
+- `build.gradle` 40 行目（`excludeTags 'karate'`）: `test` タスクは `karate` の目印が付いたテストを **除外** します
+- `build.gradle` 52 行目（`includeTags 'karate'`）: `karateTest` タスクは、その目印が付いたテスト **だけ** を実行します
 - `build.gradle` 54 行目: Gradle に渡した `-Dkarate.env=...` を、テストを実行する JVM に引き継ぎます
 - `build.gradle` 55 行目: 毎回必ず実行します（前回の結果を使い回しません）
 
@@ -231,7 +231,7 @@ tasks.register('karateTest', Test) {
 4. 409 の応答は、sample-app のどこで作られますか。
 
     ??? note "答え"
-        `MemberService.java` 27〜29 行目で `BusinessException` が投げられ、`ApiExceptionHandler.java` 31〜35 行目で 409（`CONFLICT`）に変換されます。
+        `MemberService.java` 27〜29 行目（`existsByEmail`）で `BusinessException` が投げられ、`ApiExceptionHandler.java` 31〜35 行目（`business`）で 409（`CONFLICT`）に変換されます。
 
 ## コードを読むときの確認観点
 
@@ -245,10 +245,10 @@ tasks.register('karateTest', Test) {
 
 まず自分で考え、ソースを開いて確かめてから解答を見てください。
 
-1. **考える**: `members.feature` 5 行目のメールアドレスを、固定の `'karate@example.com'` に変えました。同じ DB で `./gradlew karateTest` を 2 回続けて実行すると、どのシナリオが、何回目に、どう失敗しますか。
+1. **考える**: `members.feature` 5 行目（`* def email`）のメールアドレスを、固定の `'karate@example.com'` に変えました。同じ DB で `./gradlew karateTest` を 2 回続けて実行すると、どのシナリオが、何回目に、どう失敗しますか。
 2. **動きを予想する**: アプリを起動しないまま `./gradlew karateTest` を実行すると、どうなりますか。`./gradlew test` ではどうですか。
 3. **小さな変更**: 「入力に誤りがあれば 400」を確かめるシナリオを `members.feature` に追加してください。名前を空、メールアドレスを `not-an-email` にし、ステータス・`messageId`・`details` の件数を確かめます。
-4. **場所を探す（不具合の可能性）**: `karate-config.js` 5 行目のコメントどおり、`./gradlew karateTest -Dkarate.env=dev -DbaseUrl=https://<開発環境のホスト>` と実行しました。`baseUrl` はテストに届くでしょうか。`build.gradle` の該当行を根拠に答え、届かないなら直し方も書いてください。
+4. **場所を探す（不具合の可能性）**: `karate-config.js` 5 行目（`-Dkarate.env=dev -DbaseUrl=...`）のコメントどおり、`./gradlew karateTest -Dkarate.env=dev -DbaseUrl=https://<開発環境のホスト>` と実行しました。`baseUrl` はテストに届くでしょうか。`build.gradle` の該当行を根拠に答え、届かないなら直し方も書いてください。
 5. **どのテストが落ちるか**: 会員の応答に、登録日時の項目 `createdAt` を足しました（`Member` レコードに項目を追加）。`members.feature` のどの行が失敗しますか。単体テストはどうですか。
 
 解答: [30-15 解答](answers/30-15.md)

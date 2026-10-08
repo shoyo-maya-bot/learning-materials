@@ -35,7 +35,7 @@ Gradle の基本は [20-06 Gradle](../20-basics/20-06-gradle.md) で学びまし
 Java の版、Spring Boot の版、使うデータベース、テストの分け方などです。
 これを読まずにコードを書くと、次のような失敗をします。
 
-- 手元の Java 21 では動くのに、CI（自動ビルド）の Java 17 でコンパイルできない
+- 手元の Java 21 では動くのに、CI（自動ビルド）の Java {{ versions.java }} でコンパイルできない
 - `./gradlew test` が通ったのに、API テストを一度も実行していなかった
 - 必要なライブラリを自分で追加し、版の食い違いでエラーになる
 
@@ -121,11 +121,11 @@ tasks.withType(JavaCompile).configureEach {
 }
 ```
 
-- `release = 17`: Java 17 の API だけを使ってコンパイルします。手元の JDK が 21 でも、21 で追加された API はコンパイルエラーになります
+- `release = {{ versions.java }}`: Java {{ versions.java }} の API だけを使ってコンパイルします。手元の JDK が 21 でも、21 で追加された API はコンパイルエラーになります
 - `encoding = 'UTF-8'`: 日本語のコメントや文字列を正しく読みます
 - `-parameters`: メソッドの引数名をクラスファイルに残します。Spring などが引数名を使って値を結びつける場面で必要です
 
-CI でも Java 17 を使っています（`dev-environment/.github/workflows/ci.yml` の `java-version: "17"`）。
+CI でも Java {{ versions.java }} を使っています（`dev-environment/.github/workflows/ci.yml` の `java-version: "{{ versions.java }}"`）。
 
 ### 依存（24〜35 行目）
 
@@ -186,7 +186,7 @@ tasks.register('karateTest', Test) {
 ```
 
 - `test` は、タグ `karate` の付いたテストを除外します
-- `ApiKarateTest` にはクラスに `@Tag("karate")` が付いています（`ApiKarateTest.java` 14 行目）
+- `ApiKarateTest` にはクラスに `@Tag("karate")` が付いています（`ApiKarateTest.java` 14 行目（`@Tag("karate")`））
 - `karateTest` は逆に、タグ `karate` の付いたテストだけを実行します
 - `systemProperty 'karate.env', ...` は、Gradle に渡した `-Dkarate.env` をテストの JVM に引き渡します
 - `outputs.upToDateWhen { false }` は「前回から変更が無くても毎回実行する」という意味です。起動中のアプリの状態は、Gradle には分からないからです
@@ -199,7 +199,7 @@ tasks.register('karateTest', Test) {
 | --- | --- |
 | `build.gradle` 1 ファイル | 複数モジュールなら `settings.gradle` の `include` と、各モジュールの `build.gradle`。Maven なら `pom.xml` |
 | `mavenCentral()` | 社内のリポジトリ（ミラー）の設定。`settings.gradle` や `init.gradle` にあることも多い |
-| `options.release = 17` | 本番環境の Java の版。設計書・環境定義書と食い違っていないか |
+| `options.release = {{ versions.java }}` | 本番環境の Java の版。設計書・環境定義書と食い違っていないか |
 | `excludeTags 'karate'` | テストの種類の分け方（単体・結合・E2E）と、CI でどのタスクを実行しているか |
 | `jacocoTestReport` | カバレッジの基準値と、レポートの置き場所 |
 | `gradle/wrapper/gradle-wrapper.properties` | Gradle 自体の版（サンプルは {{ versions.gradle }}） |
@@ -209,8 +209,8 @@ tasks.register('karateTest', Test) {
 
 ## もし build.gradle の版固定や設定がなかったら？
 
-`release = 17` が無いと、手元の JDK 21 で書いたコードが 21 の API を使ってしまいます。
-手元ではビルドが通るのに、CI や本番の Java 17 で初めて失敗します。
+`release = {{ versions.java }}` が無いと、手元の JDK 21 で書いたコードが 21 の API を使ってしまいます。
+手元ではビルドが通るのに、CI や本番の Java {{ versions.java }} で初めて失敗します。
 
 テストタスクの分け方が無いと、`./gradlew test` が起動中のアプリを必要とします。
 アプリを起動していない CI では、毎回 API テストが失敗します。
@@ -218,10 +218,10 @@ tasks.register('karateTest', Test) {
 
 ## 理解度チェック
 
-**問 1.** `options.release = 17` があると、手元の JDK が 21 のときに何が起きますか。
+**問 1.** `options.release = {{ versions.java }}` があると、手元の JDK が 21 のときに何が起きますか。
 
 ??? note "答え"
-    Java 17 向けにコンパイルされます。
+    Java {{ versions.java }} 向けにコンパイルされます。
     Java 21 で追加された API を使うと、コンパイルエラーになります（15 行目）。
 
 **問 2.** PostgreSQL のドライバが `runtimeOnly` なのはなぜですか。

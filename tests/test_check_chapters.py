@@ -79,6 +79,29 @@ class CheckChaptersTest(unittest.TestCase):
         self.assertIn(f"20-basics/20-01-x.md:{line}: 禁止語「@gmail.com」があります", errs)
         self.assertIn("20-basics/index.md:3: 禁止語「株式会社」があります", errs)
 
+    def test_local_path_terms_match_only_path_starts(self):
+        # 後退: 「/Users/」を大文字小文字を区別せずどこでも探していたので、`/api/users/{id}` を誤検出した
+        self.banned.write_text("C:\\Users\\\npath:/Users/\n", encoding="utf-8")
+        self.write(
+            "20-basics/index.md",
+            "# 索引\n\n"
+            "`GET /api/users/{id}` で取得します\n"  # 3: URL の一部（誤検出しない）
+            "https://example.com/Users/list\n"  # 4: URL の途中（誤検出しない）
+            "保存先は /Users/taro/work です\n"  # 5: 空白の直後のパス
+            '"/Users/taro" を開く\n'  # 6: クォートの直後
+            "/Users/taro\n"  # 7: 行頭
+            "c:\\users\\taro\n",  # 8: Windows は大文字小文字を区別しない
+        )
+        _, errs = self.run_check()
+        lines = sorted(int(e.split(":")[1]) for e in errs)
+        self.assertEqual(lines, [5, 6, 7, 8], errs)
+        self.assertIn("禁止語「/Users/」", errs[0])
+
+    def test_repository_list_does_not_flag_api_paths(self):
+        terms = cc.load_banned()
+        self.write("20-basics/index.md", "# 索引\n\n`/api/users/{id}` と `/v1/Users/` の URL\n")
+        self.assertEqual(cc.check_banned(self.docs / "20-basics/index.md", terms, self.docs), [])
+
     def test_empty_or_missing_banned_list_fails(self):
         # 後退: 禁止語のリストが空（BANNED = []）だと、検査が黙って何もしなかった
         self.write("20-basics/20-01-x.md", chapter())

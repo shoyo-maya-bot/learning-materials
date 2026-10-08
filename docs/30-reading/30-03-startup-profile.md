@@ -200,7 +200,7 @@ spring:
 
 | 指定 | 効く場所 |
 | --- | --- |
-| `batch` プロファイル | `application-batch.yml`（Web サーバー無し）と `SampleApplication` 18 行目 |
+| `batch` プロファイル | `application-batch.yml`（Web サーバー無し）と `SampleApplication` 18 行目（`matchesProfiles("batch")`） |
 | `--app.batch.job=JOB0001` | `OrderImportJob` 23 行目の `@ConditionalOnProperty` |
 | `--input=...` | `OrderImportJob` 43 行目の `args.getOptionValues("input")` |
 
@@ -246,7 +246,7 @@ spring:
 
 ??? note "答え"
     `localpass` です。
-    `application.yml` 11 行目の値を、`application-local.yml` 4 行目が上書きし、その既定値が使われます。
+    `application.yml` 11 行目（`password`）の値を、`application-local.yml` 4 行目（`${DB_PASSWORD:localpass}`）が上書きし、その既定値が使われます。
 
 **問 4.** ジョブの中で直接 `System.exit` を呼ばない理由を 2 つ挙げてください。
 

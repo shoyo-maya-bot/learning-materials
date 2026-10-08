@@ -163,7 +163,7 @@ BOM が付いたままだと、見出しの比較（27 行目）が一致せず�
 !!! note "ソースの見た目について"
     実際のソースでは、`"﻿"` ではなく BOM の文字そのものが `""` の間に入っています。
     エディタでは `""`（空文字）に見えるので注意してください。上の引用は、読みやすさのために `﻿` と書き換えています。
-    テスト `OrderImportServiceTest.java` 21 行目も同じです。
+    テスト `OrderImportServiceTest.java` 21 行目（`OrderImportService.HEADER`）も同じです。
 
 ### 実案件での読み替え
 
@@ -230,6 +230,6 @@ BOM が付いたままだと、見出しの比較（27 行目）が一致せず�
 2. **動きを予想する**: 3 行目が `A0005,1,P-001,abc` のとき、`ImportResult.errors()` に入る文字列を正確に答えてください。
 3. **どのテストが落ちるか**: `parse` の `line.split(",", -1)` を `line.split(",")` に変えたとき、`OrderImportServiceTest` のどのテストが失敗しますか。
 4. **どのテストが落ちるか**: `importLines` 27 行目の `stripBom(lines.get(0))` を `lines.get(0)` に変えたとき、どのテストが失敗しますか。
-5. **小さな変更**: DB の `product_code` は `VARCHAR(20)` です（`01_schema.sql` 12 行目）。21 文字以上の商品コードを形式エラーにする検証を `parse` に追加し、`parseRejects` にテストケースを 1 つ足してください。
+5. **小さな変更**: DB の `product_code` は `VARCHAR(20)` です（`01_schema.sql` 12 行目（`product_code VARCHAR(20)`））。21 文字以上の商品コードを形式エラーにする検証を `parse` に追加し、`parseRejects` にテストケースを 1 つ足してください。
 
 解答: [30-10 解答](answers/30-10.md)
