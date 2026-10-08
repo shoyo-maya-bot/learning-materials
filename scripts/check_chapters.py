@@ -4,7 +4,9 @@
 - 章のページ（docs/<編>/<NN-NN>-*.md）に、到達目標と必須の見出しがこの順である
 - 30 実ソース読解の章は「演習」があり、解答ページ（answers/30-xx.md）へのリンクがあり、解答ページが存在する
 - docs/ のすべての .md に、禁止語（banned-terms.txt. 実在の会社名・個人のメールアドレスなど）が無い.
-  禁止語のリストが読めない・空のときも失敗にする（検査が黙って無効にならないように）
+  禁止語のリストが読めない・空のときも失敗にする（検査が黙って無効にならないように）.
+  `path:` で始まる語（ローカルのユーザーパス）は大文字小文字を区別し、行頭・空白・クォート・括弧の直後から
+  始まるパスの形のときだけ当てる（`/api/users/{id}` のような URL の一部は誤検出しない）
 
 終了コード: 0 問題なし / 1 問題あり
 """
@@ -29,6 +31,9 @@ REQUIRED = [
     "コードを読むときの確認観点",
 ]
 CHAPTER = re.compile(r"^\d{2}-\d{2}-.+\.md$")
+PATH_PREFIX = "path:"
+# ローカルパスが始まる位置: 行頭・空白・クォート・バッククォート・括弧・= の直後
+PATH_START = r"(?:^|(?<=[\s'\"`(（「\[<=]))"
 
 
 def load_banned(path: Path = BANNED_FILE) -> list[str]:
@@ -75,13 +80,25 @@ def check(path: Path, docs: Path = DOCS) -> list[str]:
     return errs
 
 
+def banned_matcher(term: str) -> tuple[str, re.Pattern[str]]:
+    """禁止語 1 つを（表示名, 正規表現）にする.
+
+    ふつうの語は大文字小文字を区別せず、どこにあっても当てる.
+    `path:/Users/` の形（ローカルのユーザーパス）は大文字小文字を区別し、パスの始まりの位置だけに当てる.
+    """
+    if term.startswith(PATH_PREFIX):
+        word = term[len(PATH_PREFIX) :].strip()
+        return word, re.compile(PATH_START + re.escape(word))
+    return term, re.compile(re.escape(term), re.IGNORECASE)
+
+
 def check_banned(path: Path, banned: list[str], docs: Path = DOCS) -> list[str]:
-    """禁止語（大文字小文字を区別しない）. 行番号付きで返す."""
+    """禁止語. 行番号付きで返す（大文字小文字の扱いと当てる位置は banned_matcher）."""
     rel = path.relative_to(docs).as_posix()  # Windows でも / 区切りで出す
+    matchers = [banned_matcher(t) for t in banned]
     errs = []
     for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        low = line.lower()
-        errs += [f"{rel}:{lineno}: 禁止語「{t}」があります" for t in banned if t.lower() in low]
+        errs += [f"{rel}:{lineno}: 禁止語「{name}」があります" for name, pat in matchers if pat.search(line)]
     return errs
 
 
