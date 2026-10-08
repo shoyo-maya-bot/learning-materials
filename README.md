@@ -28,7 +28,7 @@ AI（Copilot など）に書かせるときの指示は [AGENTS.md](AGENTS.md) �
 ```bash
 pip install -r requirements.txt -c constraints.txt   # 版は constraints.txt で固定（deps-lock.yml が自動で作る）
 mkdocs serve                       # http://127.0.0.1:8000
-python scripts/check_chapters.py   # 章の構成（到達目標・必須の見出し・演習と解答）
+python scripts/check_chapters.py   # 章の構成（到達目標・必須の見出し・演習と解答）と禁止語
 python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか
 python scripts/check_versions.py   # 本文の版（mkdocs.yml の extra.versions）が exercise-base の実物と一致するか
 mkdocs build --strict              # CI と同じ（リンク切れで失敗）
