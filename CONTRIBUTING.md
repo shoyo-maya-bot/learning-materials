@@ -53,6 +53,21 @@ dev-environment のコードを引用したブロックの直前に、引用元�
 - title が `sample-app/`・`local/`・`cloud/` で始まるブロックは、コメントが無いと失敗する。説明用に書き換えた例（「例:」「悪い例」「修正案」）には付けない
 - コメントの付け方に迷ったら `python scripts/check_code_quotes.py --suggest` が、一致する引用元を提案する
 
+### 引用元の固定
+
+`@main` / `@exercise-base` は、ブランチの最新ではなく `dev-environment-pin.json` に書いた SHA に読み替えて比べます。
+dev-environment が更新されても、教材の CI が急に赤くなることはありません（`check_versions.py` も同じ SHA を使います）。
+固定先を変えるのは、このファイルの 1 か所だけです。
+
+dev-environment の更新に教材を合わせる手順:
+
+1. 手元の dev-environment で、新しいコードと教材を比べる: `python scripts/check_code_quotes.py --repo-dir ../dev-environment --ref main=HEAD`
+2. 出てきた差分に合わせて教材を直す（引用の中身・行番号・本文の説明）
+3. `dev-environment-pin.json` の SHA を新しいコミットに上げ、教材の修正と同じ PR に入れる
+
+dev-environment の PR では、教材の引用検査がその PR の head に対して走ります（dev-environment 側の CI）。
+そこで差分が出たら、上の手順で教材の PR を用意します。
+
 ## 版の書き方
 
 本文（コードブロックの外）に版を直接書かず、`mkdocs.yml` の `extra.versions` を参照します。値は `exercise-base` ブランチのものです。
@@ -79,6 +94,7 @@ python scripts/check_chapters.py   # 章の構成（必須の見出し）を検�
 python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか（git で取得する）
 python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で確かめる
 python scripts/check_versions.py --repo-dir ../dev-environment      # 本文の版が exercise-base と一致するか
+ruff check . && ruff format --check .   # scripts/・tests/ の静的解析と書式（設定は ruff.toml。CI の lint ジョブ）
 ```
 
 Windows（PowerShell）でも同じコマンドで動きます（CI の `windows` ジョブで確認）。結果をファイルに保存したりパイプに渡したりするときは、
