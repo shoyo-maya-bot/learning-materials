@@ -31,8 +31,13 @@
   （「・」「、」で並べてもよい）を、ページの既定のブランチ（冒頭に exercise-base の注記がある章と解答は
   @exercise-base、それ以外は @main）の、固定した SHA の実物と比べる
 - 行がファイルにあること（範囲の行がすべて空行なら誤り）
-- 直後に「の `コード`」があれば、そのコードが範囲の中にあること（`...` は任意の文字列）
+- 直後に「の `コード`」「（`コード`）」「: `コード`」などがあれば、そのコードが範囲の中にあること
+  （`...` は任意の文字列. メソッド名なら、範囲がそのメソッドの中でもよい）
 - `クラス名.メンバー` なら、メンバー名が範囲の中にあること
+- コードもメンバー名も無い参照は、すぐ後（3 行以内）の同じファイルの引用ブロックが範囲の中にあること、
+  またはすぐ前（8 行以内）の同じファイルの引用ブロックが参照の行を含むことで照合する
+- どれでも照合できない参照は件数を出し、上限（--max-unverified. 既定 0）を超えたら失敗にする.
+  「`File.java` N〜M 行目（`メソッド名`）」の形に書き直す
 - ファイル名が同名のファイルに複数当たるときは、パスで書くこと。クラス名で引いてファイルが無いもの
   （Spring の `SpringApplication` など、dev-environment の外のクラス）は照合しない
 
@@ -75,7 +80,10 @@ from codequotes.line_refs import (  # noqa: F401
     LINE_REF,
     LINE_REF_EXTS,
     LINE_SPAN,
+    UNVERIFIED_MAX,
+    LineRefResult,
     check_line_refs,
+    check_line_refs_detail,
     code_in,
     hint_lines,
     java_decl,
@@ -114,11 +122,28 @@ from codequotes.source import (  # noqa: F401
 )
 
 
+def unverified_errors(unverified: list[str], limit: int) -> list[str]:
+    """中身と照合できない行番号の参照が上限を超えたら、その一覧を誤りとして返す."""
+    if len(unverified) <= limit:
+        return []
+    return [
+        f"{u}: 行番号だけでは中身と照合できません. 「`File.java` N〜M 行目（`メソッド名`）」"
+        f"や「N 行目の `コード`」の形で書いてください（照合できない参照 {len(unverified)} 件 > 上限 {limit}）"
+        for u in unverified
+    ]
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     add_source_args(ap)
     ap.add_argument("--docs", type=Path, default=DOCS)
     ap.add_argument("--suggest", action="store_true", help="コメントの無いブロックの引用元を提案する")
+    ap.add_argument(
+        "--max-unverified",
+        type=int,
+        default=UNVERIFIED_MAX,
+        help=f"中身と照合できない本文の行番号の参照の上限（既定 {UNVERIFIED_MAX}. 増やさない）",
+    )
     args = ap.parse_args(argv)
 
     try:
@@ -130,10 +155,12 @@ def main(argv: list[str] | None = None) -> int:
         errors: list[str] = []
         checked = 0
         line_refs = 0
+        unverified: list[str] = []
         for doc in sorted(args.docs.rglob("*.md")):
-            n, errs = check_line_refs(doc, src)
-            line_refs += n
-            errors += errs
+            r = check_line_refs_detail(doc, src)
+            line_refs += r.checked
+            errors += r.errors
+            unverified += r.unverified
             for block in parse_blocks(doc):
                 if block.marker:
                     checked += 1
@@ -150,10 +177,14 @@ def main(argv: list[str] | None = None) -> int:
         if tmp:
             shutil.rmtree(tmp, ignore_errors=True)
 
+    errors += unverified_errors(unverified, args.max_unverified)
     for e in errors:
         print(f"NG {e}")
     pinned = ", ".join(f"{k}={str(v)[:12]}" for k, v in (src.pins or {}).items())
-    print(f"引用 {checked} 件・本文の行番号 {line_refs} 件（{pinned}）/ 問題 {len(errors)} 件")
+    print(
+        f"引用 {checked} 件・本文の行番号 {line_refs} 件（うち中身と照合できないもの {len(unverified)} 件. "
+        f"上限 {args.max_unverified}）（{pinned}）/ 問題 {len(errors)} 件"
+    )
     return 1 if errors else 0
 
 

@@ -114,7 +114,7 @@ spring:
     web-application-type: none
 ```
 
-API とバッチは 1 つのプロジェクトに同居しています（`build.gradle` 1 行目のコメント）。
+API とバッチは 1 つのプロジェクトに同居しています（`build.gradle` 1 行目（`// サンプルアプリ`）のコメント）。
 同じ jar を、プロファイルの違いで API にもバッチにも使い分けています。
 
 ### (3)(4)(7) ジョブのクラス
@@ -184,9 +184,9 @@ JOB0001 でも、次の点は自分の目で確かめる価値があります。
 | 設計書の記述 | 実装で確かめる場所 |
 |---|---|
 | 実装クラスのパッケージ名 | `OrderImportJob.java` 1 行目の `package` 文 |
-| 入力の S3 キー | ローカルは `orders.csv`（`upload-sample.sh` 7 行目）。本番のキーは起動引数で渡す |
-| 終了コード 0 / 4 / 8 | `OrderImportJob.java` 26〜28 行目 |
-| メッセージ ID | `MessageIds.java` 13〜15 行目、`messages.properties` 4〜6 行目 |
+| 入力の S3 キー | ローカルは `orders.csv`（`upload-sample.sh` 7 行目（`orders.csv`））。本番のキーは起動引数で渡す |
+| 終了コード 0 / 4 / 8 | `OrderImportJob.java` 26〜28 行目（`OK = 0`） |
+| メッセージ ID | `MessageIds.java` 13〜15 行目（`IMPORT_STARTED`）、`messages.properties` 4〜6 行目（`APPI0001`） |
 
 !!! tip "ずれを見つけたら"
     どちらが正しいかを自分で決めず、設計書の担当者に確認してください。
@@ -222,7 +222,7 @@ JOB0001 でも、次の点は自分の目で確かめる価値があります。
 2. 同じ jar を API として起動したとき、プロセスが終わらないのはなぜですか。
 
     ??? note "答え"
-        `SampleApplication.java` 18 行目の条件（プロファイル `batch`）が偽になり、`System.exit` を呼ばないからです。
+        `SampleApplication.java` 18 行目（`matchesProfiles("batch")`）の条件（プロファイル `batch`）が偽になり、`System.exit` を呼ばないからです。
         また `application-batch.yml` が読まれないので、Web サーバーが起動したまま待ち続けます。
 
 3. `OrderImportJob` が受け持つ 2 つの役割を答えてください。

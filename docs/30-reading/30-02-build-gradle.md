@@ -186,7 +186,7 @@ tasks.register('karateTest', Test) {
 ```
 
 - `test` は、タグ `karate` の付いたテストを除外します
-- `ApiKarateTest` にはクラスに `@Tag("karate")` が付いています（`ApiKarateTest.java` 14 行目）
+- `ApiKarateTest` にはクラスに `@Tag("karate")` が付いています（`ApiKarateTest.java` 14 行目（`@Tag("karate")`））
 - `karateTest` は逆に、タグ `karate` の付いたテストだけを実行します
 - `systemProperty 'karate.env', ...` は、Gradle に渡した `-Dkarate.env` をテストの JVM に引き渡します
 - `outputs.upToDateWhen { false }` は「前回から変更が無くても毎回実行する」という意味です。起動中のアプリの状態は、Gradle には分からないからです

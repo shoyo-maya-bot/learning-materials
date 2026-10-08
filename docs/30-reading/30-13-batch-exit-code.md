@@ -103,7 +103,7 @@ public class OrderImportJob implements ApplicationRunner, ExitCodeGenerator {
 | 55 行目 | 4 または 0 | 取込が最後まで進んだ。形式エラーの行があれば 4 |
 | 58 行目 | 8 | 取得・見出しの確認・登録のどこかで例外 |
 
-`ImportResult.hasErrors()` は `errors` が空でないかだけを見ます（`ImportResult.java` 14〜16 行目）。
+`ImportResult.hasErrors()` は `errors` が空でないかだけを見ます（`ImportResult.java` 14〜16 行目（`hasErrors`））。
 **重複（`duplicated`）は 4 の理由になりません**。
 
 ### プロセスへの受け渡し
@@ -191,7 +191,7 @@ exit "$rc"
 3. API として起動したとき、`OrderImportJob.getExitCode()` は呼ばれますか。
 
     ??? note "答え"
-        呼ばれません。`SampleApplication.java` 18 行目の条件（プロファイル `batch`）が偽なので、`SpringApplication.exit` を呼びません。
+        呼ばれません。`SampleApplication.java` 18 行目（`matchesProfiles("batch")`）の条件（プロファイル `batch`）が偽なので、`SpringApplication.exit` を呼びません。
         そもそも `app.batch.job` を指定しなければ、`OrderImportJob` は Bean になりません（30-09）。
 
 4. 起動シェルで `exit "$rc"` を書き忘れると、何が起きますか。
@@ -213,7 +213,7 @@ exit "$rc"
 まず自分で考え、ソースを開いて確かめてから解答を見てください。
 
 1. **動きを予想する**: 次の入力のとき、終了コードはそれぞれいくつですか。(a) `--input` を 2 回指定した (b) データ行がすべて重複 (c) 見出しの綴りが違う (d) データ行 3 行のうち 1 行の列数が 3
-2. **どのテストが落ちるか**: `OrderImportJob.java` 55 行目を `exitCode = OK;` に変えたとき、`OrderImportJobTest` のどのテストが失敗しますか。
+2. **どのテストが落ちるか**: `OrderImportJob.java` 55 行目（`exitCode = r.hasErrors() ? WARN : OK;`）を `exitCode = OK;` に変えたとき、`OrderImportJobTest` のどのテストが失敗しますか。
 3. **どのテストが落ちるか**: 56〜59 行目の `catch` を消し、`run` に `throws Exception` を付けた（例外を外に出す）とします。コンパイルは通るとして、どのテストが失敗しますか。実際にバッチを動かしたときの終了コードはどうなりますか。
 4. **小さな変更**: 仕様変更で「取り込めた行も重複した行も 0 件（`imported == 0` かつ `duplicated == 0`）なら 4 にする」ことになりました。変更する行と、追加するテストを書いてください。
 5. **考える**: 設計書 STEP3 の表と `OrderImportJob` を比べたとき、メッセージの出し方で一致していない点はありますか。ログに出るメッセージ ID に注目してください。

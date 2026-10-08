@@ -219,13 +219,13 @@ echo "uploaded: s3://${BUCKET}/orders.csv"
 1. `OrderImportJob` は `S3Client` を直接使っていますか。
 
     ??? note "答え"
-        使っていません。`OrderImportJob` が受け取るのは `FileFetcher` だけです（`OrderImportJob.java` 36 行目のコンストラクタ）。
+        使っていません。`OrderImportJob` が受け取るのは `FileFetcher` だけです（`OrderImportJob.java` 36 行目（`OrderImportJob(FileFetcher fetcher, ...)`）のコンストラクタ）。
         `S3Client` を使うのは `DefaultFileFetcher` だけです。
 
 2. クラウドで動かすとき、S3 の認証情報はどこから来ますか。
 
     ??? note "答え"
-        `app.s3.endpoint` が空なので、`DefaultCredentialsProvider` が実行環境の標準の場所（環境変数や実行環境に付けたロールなど）から探します（`S3Config.java` 30〜31 行目）。
+        `app.s3.endpoint` が空なので、`DefaultCredentialsProvider` が実行環境の標準の場所（環境変数や実行環境に付けたロールなど）から探します（`S3Config.java` 30〜31 行目（`DefaultCredentialsProvider`））。
         ソースや設定ファイルに鍵は書きません。
 
 3. `--input=s3://sample-bucket/inbound/orders.csv` のとき、バケットとキーはそれぞれ何になりますか。

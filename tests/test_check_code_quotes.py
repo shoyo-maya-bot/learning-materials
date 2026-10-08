@@ -1,5 +1,7 @@
 """scripts/check_code_quotes.py のテスト（仮の dev-environment と章を作り、ずれを検知できるか）."""
 
+import contextlib
+import io
 import subprocess
 import sys
 import tempfile
@@ -210,6 +212,68 @@ class LineRefsTest(unittest.TestCase):
 
     def test_code_blocks_are_skipped(self):
         self.assertEqual(self.refs("```text\n`MemberService.java` 40 行目\n```\n"), (0, []))
+
+    def test_code_after_label_is_checked(self):
+        # 後退: 「N 行目（`x`）」「N 行目: `x`」の x は照合されず、行番号がずれても気づけなかった
+        text = "`MemberService.java` 12 行目（`mapper.findById`）\n`MemberService.java` 8 行目: `count()`\n"
+        n, errs = self.refs(text)
+        self.assertEqual(n, 2)
+        self.assertEqual(len(errs), 2, errs)
+        self.assertIn("8 行目にあります", errs[0])
+
+    def test_method_name_label_covers_lines_inside_method(self):
+        # 「`File.java` N〜M 行目（`メソッド名`）」: 範囲がそのメソッドの中なら一致
+        self.assertEqual(self.refs("`MemberService.java` 8 行目（`get`）\n"), (1, []))
+        _, errs = self.refs("`MemberService.java` 12 行目（`get`）\n")
+        self.assertEqual(len(errs), 1, errs)
+
+    def detail(self, text, name="ch.md"):
+        doc = self.docs / name
+        doc.write_text(text, encoding="utf-8")
+        return cq.check_line_refs_detail(doc, self.src)
+
+    def test_ref_is_checked_against_following_quote(self):
+        # 「`File.java` の 7〜9 行目です。」の直後の引用ブロックが、その範囲の中の行であること
+        quote = (
+            "<!-- src: sample-app/src/main/java/MemberService.java @main -->\n"
+            "```java\npublic long count() {\n    return 0;\n}\n```\n"
+        )
+        ok = self.detail("`MemberService.java` の 11〜13 行目です。\n\n" + quote)
+        self.assertEqual((ok.errors, ok.unverified), ([], []))
+        # 後退: 行番号だけの参照は、直後の引用と食い違っていても検出されなかった
+        bad = self.detail("`MemberService.java` の 7〜9 行目です。\n\n" + quote)
+        self.assertEqual(len(bad.errors), 1, bad.errors)
+        self.assertIn("範囲の外", bad.errors[0])
+
+    def test_ref_is_checked_against_preceding_quote(self):
+        quote = (
+            "<!-- src: sample-app/src/main/java/MemberService.java#L7-L9 @main -->\n"
+            "```java\npublic Member get(long id) {\n    return mapper.findById(id).orElseThrow();\n}\n```\n\n"
+        )
+        ok = self.detail(quote + "- `MemberService.java` 8 行目: 見つからなければ例外\n")
+        self.assertEqual((ok.errors, ok.unverified), ([], []))
+        # 引用の外の行は、引用では確かめられない
+        other = self.detail(quote + "- `MemberService.java` 12 行目: 件数\n")
+        self.assertEqual(len(other.unverified), 1, other.unverified)
+
+    def test_unverified_refs_are_counted_and_capped(self):
+        r = self.detail("`MemberService.java` 8 行目を見ます。\n`MemberService.java` 8 行目（`findById`）。\n")
+        self.assertEqual(r.checked, 2)
+        self.assertEqual(len(r.unverified), 1, r.unverified)
+        self.assertEqual(cq.unverified_errors(r.unverified, 1), [])
+        errs = cq.unverified_errors(r.unverified, 0)
+        self.assertTrue(errs and "上限 0" in errs[0], errs)
+
+    def test_main_fails_when_unverified_refs_exceed_limit(self):
+        # 後退: 中身と照合できない行番号の参照がいくつあっても通っていた
+        (self.docs / "ch.md").write_text("`MemberService.java` 8 行目を見ます。\n", encoding="utf-8")
+        args = ["--repo-dir", str(self.repo), "--docs", str(self.docs)]
+        args += ["--ref", "main=main", "--ref", "exercise-base=exercise-base"]
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(cq.main(args), 1)
+        self.assertIn("照合できません", out.getvalue())
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(cq.main([*args, "--max-unverified", "1"]), 0)
 
     def test_page_branch(self):
         self.refs("本文\n", "x.md")

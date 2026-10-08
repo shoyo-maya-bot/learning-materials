@@ -100,7 +100,7 @@ public interface OrderMapper {
 
 - 3 行目: `namespace` が `OrderMapper` の完全修飾名と一致することで、インタフェースと SQL が結び付きます
 - 6 行目: `id` がメソッド名 `insertIfAbsent` と一致します
-- 8 行目: `#{orderNo}` などは、`Order` レコードの項目名です（`Order.java` 11 行目）
+- 8 行目: `#{orderNo}` などは、`Order` レコードの項目名です（`Order.java` 11 行目（`record Order`））
 - 9 行目: `order_no` が重複したら、エラーにせず何もしません。このとき登録件数は 0 になります
 
 `ON CONFLICT (order_no)` が効くのは、`order_no` に一意制約（ここでは主キー）があるからです。
