@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # 10-01 全体像と必要なソフト
 
 !!! abstract "到達目標"
@@ -56,10 +60,10 @@ flowchart LR
 | OS 機能 | WSL2 | 最新 | Windows の標準機能 | コンテナを動かす Linux 環境 | [10-04](10-04-docker-local.md) |
 | コンテナ | Rancher Desktop（dockerd） | 最新 | オープンソース（無償） | `docker` / `docker compose` コマンドを使う | [10-04](10-04-docker-local.md) |
 | Java | Amazon Corretto（または Eclipse Temurin） | 17（本番と同じ） | 無償の OpenJDK ディストリビューション | Java のビルドと実行 | [10-03](10-03-jdk-vscode.md) |
-| ビルド | Gradle | Wrapper で 8.14.3 に固定 | オープンソース | ビルド・テスト・起動。個別のインストールは不要 | [10-05](10-05-run-sample-app.md) |
+| ビルド | Gradle | Wrapper で {{ versions.gradle }} に固定 | オープンソース | ビルド・テスト・起動。個別のインストールは不要 | [10-05](10-05-run-sample-app.md) |
 | エディタ | VS Code + 拡張機能 | 最新 | 無償 | ソースの編集・デバッグ | [10-03](10-03-jdk-vscode.md) |
 | Git | Git for Windows（Git Bash 付き） | 最新 | オープンソース | ソース管理。シェルスクリプトは Git Bash で動かす | [10-02](10-02-git.md) |
-| DB | PostgreSQL 16（コンテナ） | 16 | オープンソース | クラウドの Aurora PostgreSQL の代わり | [10-04](10-04-docker-local.md) |
+| DB | PostgreSQL {{ versions.postgres }}（コンテナ） | {{ versions.postgres }} | オープンソース | クラウドの Aurora PostgreSQL の代わり | [10-04](10-04-docker-local.md) |
 | S3 | S3 互換エミュレータ（コンテナ） | `.env` で指定 | オープンソース | クラウドの S3（ファイル置き場）の代わり | [10-04](10-04-docker-local.md) |
 | AI 支援 | GitHub Copilot（Chat） | 最新 | 利用契約が必要（組織が用意） | コードの下書き・説明・調査の補助 | [10-06](10-06-copilot.md) |
 | （任意） | AWS CLI v2 | 最新 | 無償 | クラウド環境を操作するときだけ | — |
@@ -74,10 +78,15 @@ flowchart LR
 ソフトとは別に、sample-app が使っている技術（ライブラリやフレームワーク）も押さえておきます。
 詳しくは「20 基礎」の各章で学びます。
 
+!!! info "この教材に書いた版は `{{ versions.branch }}` ブランチのもの"
+    演習では dev-environment の `{{ versions.branch }}` ブランチを使うので、教材の版はこのブランチに合わせています。
+    `main` ブランチは修正済みで、版も新しいことがあります（`main` の版は dev-environment の `README.md` の「技術スタック」）。
+    教材の版は CI（`scripts/check_versions.py`）が `{{ versions.branch }}` の実ファイルと照合しています。
+
 | 区分 | 採用 | 学ぶ章 |
 |---|---|---|
-| 言語・FW | Java 17、Spring Boot 4.0、MyBatis | [Spring の DI](../20-basics/20-07-spring-di.md)、[MyBatis](../20-basics/20-12-mybatis.md) |
-| ビルド | Gradle 8.14（Wrapper で固定） | [Gradle](../20-basics/20-06-gradle.md) |
+| 言語・FW | Java {{ versions.java }}、Spring Boot {{ versions.spring_boot }}、MyBatis（mybatis-spring-boot-starter {{ versions.mybatis_starter }}） | [Spring の DI](../20-basics/20-07-spring-di.md)、[MyBatis](../20-basics/20-12-mybatis.md) |
+| ビルド | Gradle {{ versions.gradle }}（Wrapper で固定） | [Gradle](../20-basics/20-06-gradle.md) |
 | テスト | JUnit 5、Mockito、AssertJ、Spring MockMvc、Karate、JaCoCo | [JUnit](../20-basics/20-15-junit.md)、[Karate](../20-basics/20-17-karate.md) |
 
 ### 版を確認するコマンド
@@ -104,7 +113,7 @@ docker compose version
 
 版の固定は、sample-app のファイルにも書かれています。
 
-- `sample-app/gradle/wrapper/gradle-wrapper.properties` の `distributionUrl` で Gradle 8.14.3 を指定しています
+- `sample-app/gradle/wrapper/gradle-wrapper.properties` の `distributionUrl` で Gradle {{ versions.gradle }} を指定しています
 - `sample-app/build.gradle` の `options.release = 17` で、手元の JDK が 21 でも Java 17 向けにコンパイルします
 
 <!-- src: sample-app/build.gradle @main -->

@@ -1,7 +1,11 @@
+---
+render_macros: true
+---
+
 # 20 基礎
 
 この章群では、サンプルアプリを読み書きするために必要な基礎を学びます。
-対象は Java 17 / Spring Boot 4 / MyBatis / Gradle / JUnit 5 / Karate です。
+対象は Java {{ versions.java }} / Spring Boot {{ versions.spring_boot }} / MyBatis / Gradle / JUnit 5 / Karate です。
 目安の期間は **2 週間** です。
 
 !!! abstract "この章群の到達目標"

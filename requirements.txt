@@ -1,2 +1,5 @@
+# 直接使うもの（範囲で書く）. 実際に入れる版は constraints.txt で固定する（.github/workflows/deps-lock.yml が自動で作る）
+#   pip install -r requirements.txt -c constraints.txt
 mkdocs>=1.6.1,<2
 mkdocs-material>=9.7.7,<10
+mkdocs-macros-plugin>=1.3.7,<2

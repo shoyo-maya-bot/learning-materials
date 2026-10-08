@@ -1,10 +1,15 @@
+---
+render_macros: true
+---
+
 # 外部参照
 
 教材より詳しく調べたいときに使う、**公式ドキュメント** へのリンク集です。
 ブログや Q&A サイトの情報は、古い版の内容や誤りを含むことがあります。まず公式を確認する習慣をつけてください。
 
 !!! tip "版に注意する"
-    sample-app は Java 17・Spring Boot 4.0・Gradle 8.14・PostgreSQL 16 を使っています。
+    sample-app（演習で使う `{{ versions.branch }}` ブランチ）は Java {{ versions.java }}・Spring Boot {{ versions.spring_boot }}・Gradle {{ versions.gradle }}・PostgreSQL {{ versions.postgres }} を使っています。
+    `main` ブランチは版が新しいことがあります（`dev-environment/README.md` の「技術スタック」）。
     公式ドキュメントは版ごとに分かれていることが多いので、ページの版の表示を確認してください。
     版の一覧は `dev-environment/README.md` の「技術スタック」と `sample-app/build.gradle` にあります。
 
@@ -57,7 +62,7 @@
 
 | 資料 | 内容 |
 |---|---|
-| [PostgreSQL 16 ドキュメント](https://www.postgresql.org/docs/16/) | SQL・データ型・`psql` |
+| [PostgreSQL {{ versions.postgres }} ドキュメント](https://www.postgresql.org/docs/{{ versions.postgres }}/) | SQL・データ型・`psql` |
 | [Rancher Desktop ドキュメント](https://docs.rancherdesktop.io/) | インストールと設定（Container Engine、メモリ、ネットワーク） |
 | [Docker Compose ドキュメント](https://docs.docker.com/compose/) | `docker compose` コマンドと `docker-compose.yml` の書き方 |
 | [WSL のインストール（Microsoft）](https://learn.microsoft.com/ja-jp/windows/wsl/install) | WSL2 の有効化 |

@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # 30-02 build.gradle を読む
 
 !!! note "読むコードは `exercise-base` ブランチ"
@@ -151,7 +155,7 @@ dependencies {
 | 32 | Spring のテスト一式（JUnit、AssertJ、MockMvc） | `MemberControllerTest` など |
 | 33 | Karate | `ApiKarateTest`、`members.feature` |
 
-MyBatis と Karate は Spring Boot の管理外なので、版（`4.0.1`、`1.5.1`）を書いています。
+MyBatis と Karate は Spring Boot の管理外なので、版（`{{ versions.mybatis_starter }}`、`{{ versions.karate }}`）を書いています。
 PostgreSQL のドライバは `runtimeOnly` です。
 コードは JDBC の標準の仕組みで DB を使うので、ドライバのクラスを直接 `import` しません。
 
@@ -198,7 +202,7 @@ tasks.register('karateTest', Test) {
 | `options.release = 17` | 本番環境の Java の版。設計書・環境定義書と食い違っていないか |
 | `excludeTags 'karate'` | テストの種類の分け方（単体・結合・E2E）と、CI でどのタスクを実行しているか |
 | `jacocoTestReport` | カバレッジの基準値と、レポートの置き場所 |
-| `gradle/wrapper/gradle-wrapper.properties` | Gradle 自体の版（サンプルは 8.14.3） |
+| `gradle/wrapper/gradle-wrapper.properties` | Gradle 自体の版（サンプルは {{ versions.gradle }}） |
 
 実案件では、CI の定義ファイルも一緒に読みます。
 `build.gradle` にタスクがあっても、CI が実行していなければ守られていないからです。
@@ -236,7 +240,7 @@ tasks.register('karateTest', Test) {
 
 ??? note "答え"
     `io.spring.dependency-management` プラグイン（7 行目）が、
-    Spring Boot の版（6 行目の 4.0.7）に合った版を決めるからです。
+    Spring Boot の版（6 行目の {{ versions.spring_boot }}）に合った版を決めるからです。
 
 ## コードを読むときの確認観点
 

@@ -1,6 +1,5 @@
 """scripts/check_code_quotes.py のテスト（仮の dev-environment と章を作り、ずれを検知できるか）."""
 
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -9,8 +8,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import check_code_quotes as cq  # noqa: E402
+from _util import rmtree  # noqa: E402
 
 JAVA = """\
 package com.example.sample.member;
@@ -56,7 +57,7 @@ class CodeQuotesTest(unittest.TestCase):
         self.src = cq.Source(self.repo)
 
     def tearDown(self):
-        shutil.rmtree(self.tmp)
+        rmtree(self.tmp)
 
     def errors(self, text):
         doc = self.docs / "ch.md"
