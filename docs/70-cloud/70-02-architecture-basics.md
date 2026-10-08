@@ -170,10 +170,10 @@ flowchart LR
 | 障害を前提 | Step Functions が、ECS のタスク起動の一時的な失敗を 2 回まで再試行する |
 | 可用性 | prod では API と DB を 2 台にしている |
 
-再試行の設定は、`cloud/modules/batch-workflow/main.tf` にあります。
+再試行の設定は、ジョブフローの定義 `cloud/modules/batch-workflow/state_machine.tf` にあります（`main.tf` の Step Functions がこの定義を使います）。
 
-<!-- src: cloud/modules/batch-workflow/main.tf#L66-L71 @main -->
-```hcl title="cloud/modules/batch-workflow/main.tf（66〜71 行目）"
+<!-- src: cloud/modules/batch-workflow/state_machine.tf#L47-L52 @main -->
+```hcl title="cloud/modules/batch-workflow/state_machine.tf（47〜52 行目）"
         Retry = [{
           ErrorEquals     = ["ECS.AmazonECSException"]
           IntervalSeconds = 30
@@ -185,6 +185,7 @@ flowchart LR
 30 秒後、次は 60 秒後と、間隔を倍にしながら 2 回まで再試行します（指数バックオフ）。
 JOB0001 は登録済みの注文番号を飛ばすので、やり直しても二重登録になりません（[30-11](../30-reading/30-11-idempotent-insert.md)）。
 再試行と冪等性が、セットで設計されています。
+同じ定義は、バッチの終了コードも見ています。0 なら成功、4（形式エラーの行あり）なら通知して成功扱い、8 などそれ以外なら通知して失敗にします（通知は通知用のトピックを作る設定のとき）。これで運用担当との約束（[70-01](70-01-requirements.md)）がジョブフローの結果にそのまま表れます。
 
 一方で、単一障害点も残っています。
 `cloud/modules/network/main.tf` の NAT ゲートウェイです。
