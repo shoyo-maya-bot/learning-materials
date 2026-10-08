@@ -50,7 +50,7 @@ def load_banned(path: Path = BANNED_FILE) -> list[str]:
 def check(path: Path, docs: Path = DOCS) -> list[str]:
     """章のページの構成."""
     text = path.read_text(encoding="utf-8")
-    rel = path.relative_to(docs)
+    rel = path.relative_to(docs).as_posix()  # Windows でも / 区切りで出す
     errs = []
     if '!!! abstract "到達目標"' not in text:
         errs.append(f'{rel}: 到達目標（!!! abstract "到達目標"）がありません')
@@ -64,7 +64,7 @@ def check(path: Path, docs: Path = DOCS) -> list[str]:
             errs.append(f"{rel}: 見出し「{req}」の順番が違います")
         else:
             pos = idx
-    if rel.parts[0] == "30-reading":
+    if rel.split("/", 1)[0] == "30-reading":
         if not any("演習" in h for h in heads):
             errs.append(f"{rel}: 「演習」がありません")
         num = path.name[:5]
@@ -77,7 +77,7 @@ def check(path: Path, docs: Path = DOCS) -> list[str]:
 
 def check_banned(path: Path, banned: list[str], docs: Path = DOCS) -> list[str]:
     """禁止語（大文字小文字を区別しない）. 行番号付きで返す."""
-    rel = path.relative_to(docs)
+    rel = path.relative_to(docs).as_posix()  # Windows でも / 区切りで出す
     errs = []
     for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         low = line.lower()
