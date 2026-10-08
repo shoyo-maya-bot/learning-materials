@@ -5,6 +5,7 @@
 （mkdocs-macros。参照するページは先頭に render_macros: true を書く）。このスクリプトは次を確かめる:
 
 1. extra.versions の値が、dev-environment の extra.versions.branch（exercise-base）の実ファイルと一致する
+   （比べるのは dev-environment-pin.json で固定した SHA. check_code_quotes.py と同じ）
    - spring_boot・mybatis_starter・karate・java: sample-app/build.gradle
    - gradle: sample-app/gradle/wrapper/gradle-wrapper.properties
    - postgres: local/docker-compose.yml
@@ -14,7 +15,7 @@
 コードブロックの中の版は、引用元のコメント（src:）で check_code_quotes.py が実物と照合する.
 
 使い方:
-  python scripts/check_versions.py                                    # dev-environment を取得して検査
+  python scripts/check_versions.py                                    # 固定した SHA の dev-environment を取得して検査
   python scripts/check_versions.py --repo-dir ../dev-environment      # 手元の clone で検査
 
 終了コード: 0 問題なし / 1 問題あり
@@ -26,12 +27,11 @@ import argparse
 import re
 import shutil
 import sys
-import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from check_code_quotes import FENCE, REPO_URL, Source, fetch  # noqa: E402
+from check_code_quotes import FENCE, Source, add_source_args, open_source  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
@@ -48,7 +48,8 @@ SOURCES = {
 }
 
 # 本文に直接書いてはいけない版の書き方（コードブロックの外）
-#   MyBatis 本体（MyBatis 3）は sample-app が直接版を書いていないので対象外. 「RDS PostgreSQL 1 台」のような数は版ではない
+#   MyBatis 本体（MyBatis 3）は sample-app が直接版を書いていないので対象外.
+#   「RDS PostgreSQL 1 台」のような数は版ではない
 LITERAL = re.compile(
     r"(Spring Boot|Gradle|mybatis-spring-boot-starter)\s*\d+(\.\d+)*"
     r"|PostgreSQL\s*1\d\b"
@@ -107,6 +108,8 @@ def check_sources(versions: dict[str, str], src: Source) -> list[str]:
     branch = versions.get("branch")
     if not branch:
         return ["mkdocs.yml: extra.versions.branch（どのブランチの版を書くか）がありません"]
+    if not src.known(branch):
+        return [f"mkdocs.yml: extra.versions.branch の {branch} は dev-environment-pin.json で固定していません"]
     for name, (path, pattern) in SOURCES.items():
         if name not in versions:
             errors.append(f"mkdocs.yml: extra.versions.{name} がありません")
@@ -139,9 +142,7 @@ def check_docs(docs: Path, versions: dict[str, str]) -> list[str]:
             if name not in versions:
                 errors.append(f"{rel}: versions.{name} は mkdocs.yml の extra.versions にありません")
         values = [versions[k] for k in FULL_VERSION_KEYS if versions.get(k, "").count(".") >= 1]
-        literal = re.compile(
-            LITERAL.pattern + "".join(rf"|(?<![\d.]){re.escape(v)}(?![\d.])" for v in values)
-        )
+        literal = re.compile(LITERAL.pattern + "".join(rf"|(?<![\d.]){re.escape(v)}(?![\d.])" for v in values))
         for line_no, line in prose_lines(text):
             for m in literal.finditer(MACRO.sub("", line)):
                 errors.append(
@@ -153,23 +154,20 @@ def check_docs(docs: Path, versions: dict[str, str]) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--repo-dir", type=Path, help="dev-environment の clone（指定すると取得しない）")
-    ap.add_argument("--repo-url", default=REPO_URL)
+    add_source_args(ap)
     ap.add_argument("--docs", type=Path, default=DOCS)
     ap.add_argument("--mkdocs", type=Path, default=MKDOCS)
     args = ap.parse_args(argv)
 
     versions = load_versions(args.mkdocs)
     errors = check_docs(args.docs, versions)
-    tmp = None
     try:
-        if args.repo_dir:
-            repo = args.repo_dir
-        else:
-            tmp = Path(tempfile.mkdtemp(prefix="dev-environment-"))
-            fetch(tmp, args.repo_url)
-            repo = tmp
-        errors += check_sources(versions, Source(repo))
+        src, tmp = open_source(args.repo_dir, args.repo_url, args.ref)
+    except ValueError as e:
+        print(f"NG {e}")
+        return 1
+    try:
+        errors += check_sources(versions, src)
     finally:
         if tmp:
             shutil.rmtree(tmp, ignore_errors=True)

@@ -22,6 +22,8 @@
 ## 書く・直す
 
 執筆のルールと章のテンプレートは [CONTRIBUTING.md](CONTRIBUTING.md) にあります。
+AI（Copilot など）に書かせるときの指示は [AGENTS.md](AGENTS.md) です。
+引用元の dev-environment は `dev-environment-pin.json` の SHA で固定しています（更新の手順は CONTRIBUTING.md の「引用元の固定」）。
 
 ```bash
 pip install -r requirements.txt -c constraints.txt   # 版は constraints.txt で固定（deps-lock.yml が自動で作る）

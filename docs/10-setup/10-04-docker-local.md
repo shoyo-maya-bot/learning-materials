@@ -83,6 +83,8 @@ cp .env.example .env            # PowerShell なら: Copy-Item .env.example .env
 <!-- src: local/.env.example @main -->
 ```text
 # コピーして .env を作る（.env はコミットしない）
+# ポートやパスワードを変えたら、アプリ側にも同じ値を環境変数で渡す（local/README.md の「ポート・パスワードを変えたとき」）。
+# scripts/upload-sample.* は S3_PORT・S3_BUCKET をこのファイルから読む。
 DB_NAME=sampledb
 DB_USER=app
 DB_PASSWORD=localpass
@@ -93,6 +95,7 @@ S3_BUCKET=sample-bucket
 ```
 
 `docker compose` は、同じフォルダの `.env` を自動で読み込み、`docker-compose.yml` の `${DB_PASSWORD}` などに当てはめます。
+`.env` のポートやパスワードを変えたときは、アプリにも同じ値を環境変数で渡します（`local/README.md` に手順があります）。
 
 !!! danger "秘密情報は .env だけに書く"
     パスワードやアクセスキーは `.env` にだけ書きます。`.env` は `.gitignore` でコミット対象外です。
@@ -173,7 +176,7 @@ AWS CLI は不要で、HTTP の PUT でアップロードします。
       POSTGRES_PASSWORD: ${DB_PASSWORD:-localpass}
       TZ: Asia/Tokyo
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d:ro   # 初回起動時だけ実行される
@@ -185,7 +188,9 @@ AWS CLI は不要で、HTTP の PUT でアップロードします。
 ```
 
 - `${DB_NAME:-sampledb}`: `.env` に `DB_NAME` があればその値、無ければ `sampledb` を使います
-- `ports`: 左が PC 側、右がコンテナ側のポートです。PC の 5432 番でコンテナの DB に接続できます
+- `ports`: `127.0.0.1:5432:5432` は「この PC の 127.0.0.1 の 5432 番」を「コンテナの 5432 番」につなぐ、という意味です。
+  PC の 5432 番でコンテナの DB に接続できます。`127.0.0.1` を付けているので、同じネットワークの他の PC からはつながりません。
+  パスワードが固定の開発用 DB を、社内 LAN などに公開しないための書き方です
 - `volumes` の 1 行目: DB のデータを名前付きボリューム `db-data` に保存します。コンテナを作り直してもデータが残ります
 - `volumes` の 2 行目: `db/init` フォルダを、PostgreSQL のイメージが初回だけ実行する場所に読み取り専用でつなぎます
 - `healthcheck`: `pg_isready` で DB が接続を受け付けるかを 5 秒ごとに確かめます。`--wait` はこの結果を待ちます
