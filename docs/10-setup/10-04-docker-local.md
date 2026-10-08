@@ -169,7 +169,8 @@ AWS CLI は不要で、HTTP の PUT でアップロードします。
 <!-- src: local/docker-compose.yml @main -->
 ```yaml
   db:
-    image: postgres:16
+    # タグ@sha256:digest で固定する（同じタグの中身が差し替わっても、全員が同じイメージを使う）. 更新は Dependabot（docker-compose）
+    image: postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
     environment:
       POSTGRES_DB: ${DB_NAME:-sampledb}
       POSTGRES_USER: ${DB_USER:-app}
@@ -187,6 +188,7 @@ AWS CLI は不要で、HTTP の PUT でアップロードします。
       retries: 20
 ```
 
+- `image`: `postgres:16` の後ろの `@sha256:...` は、イメージの中身から計算した値（digest）です。タグ `16` は同じ名前のまま中身が差し替わることがありますが、digest で指定すると全員がまったく同じイメージを使えます。新しいイメージへの更新は Dependabot が PR で提案します
 - `${DB_NAME:-sampledb}`: `.env` に `DB_NAME` があればその値、無ければ `sampledb` を使います
 - `ports`: `127.0.0.1:5432:5432` は「この PC の 127.0.0.1 の 5432 番」を「コンテナの 5432 番」につなぐ、という意味です。
   PC の 5432 番でコンテナの DB に接続できます。`127.0.0.1` を付けているので、同じネットワークの他の PC からはつながりません。

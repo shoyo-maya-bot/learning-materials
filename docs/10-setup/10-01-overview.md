@@ -126,7 +126,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 ```
 
-- `local/docker-compose.yml` の `image: postgres:16` で、DB の版をクラウドと同じメジャー版にそろえています
+- `local/docker-compose.yml` の `image: postgres:16@sha256:...` で、DB の版をクラウドと同じメジャー版にそろえています（`@sha256:...` でイメージの中身まで固定）
 - `.github/workflows/ci.yml` では、CI でも Corretto 17 を使ってビルドしています
 
 ## もし環境をそろえなかったら？
