@@ -19,7 +19,7 @@ SOURCE_PREFIXES = ("sample-app/", "local/", "cloud/")
 
 def load_pins(path: Path = PIN_FILE) -> tuple[str, dict[str, str]]:
     """dev-environment-pin.json を読み、（リポジトリの URL, {ブランチ名: SHA}）を返す."""
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
     refs = data.get("refs") or {}
     for name in REFS:
         if name not in refs:
@@ -119,9 +119,43 @@ def fetch(dest: Path, url: str, pins: dict[str, str]) -> None:
     subprocess.run(["git", "-C", str(dest), "fetch", "-q", "--depth", "1", url, *specs], check=True)
 
 
-def open_source(repo_dir: Path | None, repo_url: str | None, overrides: list[str]) -> tuple[Source, Path | None]:
-    """引用元を用意する. 戻り値の 2 つ目は、後で消す一時ディレクトリ（--repo-dir のときは None）."""
+def latest_revs(url: str, names: list[str]) -> dict[str, str]:
+    """取得元のブランチ（names）の最新の SHA を git ls-remote で調べる. 調べられない・ブランチが無いなら ValueError."""
+    r = subprocess.run(
+        ["git", "ls-remote", url, *(f"refs/heads/{n}" for n in names)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if r.returncode != 0:
+        raise ValueError(f"{url} のブランチの最新を調べられません（{r.stderr.strip()}）")
+    found = {}
+    for line in r.stdout.splitlines():
+        sha, _, ref = line.partition("\t")
+        name = ref.strip().removeprefix("refs/heads/")
+        if name in names and SHA.match(sha):
+            found[name] = sha
+    missing = [n for n in names if n not in found]
+    if missing:
+        raise ValueError(f"{url} にブランチ {', '.join(missing)} がありません")
+    return found
+
+
+def open_source(
+    repo_dir: Path | None, repo_url: str | None, overrides: list[str], latest: bool = False
+) -> tuple[Source, Path | None]:
+    """引用元を用意する. 戻り値の 2 つ目は、後で消す一時ディレクトリ（--repo-dir のときは None）.
+
+    latest なら、固定した SHA の代わりに各ブランチの最新（取得元の git ls-remote）と比べる（週 1 回の定期検査用）.
+    --ref で個別に指定したものは、それを優先する.
+    """
     url, pins = load_pins()
+    if latest:
+        revs = latest_revs(repo_url or url, list(pins))
+        for name, sha in revs.items():
+            moved = "固定と同じ" if sha == pins[name] else f"固定 {pins[name][:12]} から進んでいます"
+            print(f"比べる dev-environment: {name} の最新 {sha[:12]}（{moved}）")
+        pins.update(revs)
     pins.update(parse_overrides(overrides))
     if repo_dir:
         return Source(repo_dir, pins), None
@@ -139,4 +173,9 @@ def add_source_args(ap: argparse.ArgumentParser) -> None:
         default=[],
         metavar="名前=REV",
         help="固定した SHA の代わりに比べる rev（例: --repo-dir ../dev-environment --ref main=HEAD）",
+    )
+    ap.add_argument(
+        "--latest",
+        action="store_true",
+        help="固定した SHA ではなく、dev-environment の各ブランチの最新と比べる（週 1 回の定期検査で使う）",
     )

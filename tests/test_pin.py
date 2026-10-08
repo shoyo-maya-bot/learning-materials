@@ -1,6 +1,6 @@
 """引用元を SHA で固定する仕組み（dev-environment-pin.json）のテスト.
 
-採点で見つかった後退: 引用元が dev-environment の main の最新だったため、dev-environment 側の変更
+以前の後退: 引用元が dev-environment の main の最新だったため、dev-environment 側の変更
 （.env.example の文言、ports の 127.0.0.1、main.tf の locals）だけで教材の CI が赤くなった.
 固定した SHA と比べれば、main が進んでも壊れない.
 """

@@ -14,6 +14,7 @@
   記憶や推測でコードを書かない。存在しないクラス・メソッド・設定を書かない
 - `@main` / `@exercise-base` は、ブランチの最新ではなく `dev-environment-pin.json` の SHA と比べられる。
   引用はその SHA の中身から写す（例: `git -C ../dev-environment show <SHA>:local/.env.example`）。ブランチの最新から写さない
+  （週 1 回の定期検査だけは `--latest` でブランチの最新と比べ、ずれたら Issue を起票する。SHA を上げる合図）
 - SHA を変えるのは `dev-environment-pin.json` の 1 か所だけ。スクリプトやワークフローに SHA やブランチ名を直接書かない
 - 新しいコードに合わせるときは、CONTRIBUTING.md の「引用元の固定」の手順（`--ref main=HEAD` で差分を見る → 教材を直す → SHA を上げる）を同じ PR で行う
 - 行番号を本文や title に書いたら、src の範囲（`#L2-L9`）も同じにする

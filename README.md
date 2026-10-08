@@ -38,7 +38,8 @@ mkdocs build --strict              # CI と同じ（リンク切れで失敗）
 値は `mkdocs.yml` の `extra.versions` の 1 か所にまとめ、本文では `{{ versions.gradle }}` のように参照します（そのページの先頭に `render_macros: true`）。
 
 main に push すると GitHub Pages に公開されます（初回だけ、リポジトリの Settings → Pages → Source を **GitHub Actions** にしてください）。
-引用したコードや版が dev-environment の実物とずれていると公開しません。週 1 回の定期検査が失敗すると、Issue が自動で起票されます。
+引用したコードや版が dev-environment の実物（`dev-environment-pin.json` で固定した SHA）とずれていると公開しません。
+週 1 回の定期検査では、固定した SHA ではなく dev-environment の各ブランチ（main / exercise-base）の**最新**と比べ（`--latest`）、ずれていれば Issue が自動で起票されます（公開は止まりません。教材を直して SHA を上げる合図です）。
 
 ## 変更点
 

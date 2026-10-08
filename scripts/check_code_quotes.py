@@ -46,6 +46,8 @@
   python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で検査（固定した SHA を含むこと）
   python scripts/check_code_quotes.py --repo-dir ../dev-environment --ref main=HEAD
       # 固定を外し、手元の作業中のコードと比べる（SHA を上げる前の確認）
+  python scripts/check_code_quotes.py --latest
+      # 固定ではなく dev-environment の各ブランチの最新と比べる（週 1 回の定期検査）
   python scripts/check_code_quotes.py --suggest             # コメントの無いブロックに、一致する引用元を提案する
 
 終了コード: 0 問題なし / 1 問題あり
@@ -116,6 +118,7 @@ from codequotes.source import (  # noqa: F401
     Source,
     add_source_args,
     fetch,
+    latest_revs,
     load_pins,
     open_source,
     parse_overrides,
@@ -147,7 +150,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     try:
-        src, tmp = open_source(args.repo_dir, args.repo_url, args.ref)
+        src, tmp = open_source(args.repo_dir, args.repo_url, args.ref, args.latest)
     except ValueError as e:
         print(f"NG {e}")
         return 1
