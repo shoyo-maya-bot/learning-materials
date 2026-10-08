@@ -120,9 +120,10 @@ jobs:
       - name: 依存の脆弱性（pip-audit。constraints.txt の版で）
         run: pip-audit -r constraints.txt --progress-spinner off
 
+  # 公開は検査（security を含む）がすべて通ったときだけ. tests/test_workflow.py が needs を確かめる
   deploy:
     if: github.event_name == 'push'
-    needs: [build, code-quotes, windows, lint]
+    needs: [build, code-quotes, windows, lint, security]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -138,7 +139,7 @@ jobs:
   # 週 1 回の検査が失敗したら Issue を起票する（同じタイトルの Issue が開いていれば、コメントを追記する）
   report-scheduled-failure:
     if: failure() && github.event_name == 'schedule'
-    needs: [build, code-quotes, windows, lint]
+    needs: [build, code-quotes, windows, lint, security]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -154,7 +155,7 @@ jobs:
           body="$(printf '%s\n\n%s\n%s\n\n%s' \
             "週 1 回の定期実行で、教材の検査が失敗しました（$(date -u +%Y-%m-%d)）。" \
             "- 実行結果: ${RUN_URL}" \
-            "- 結果: build=${{ needs.build.result }} / code-quotes=${{ needs.code-quotes.result }} / windows=${{ needs.windows.result }} / lint=${{ needs.lint.result }}" \
+            "- 結果: build=${{ needs.build.result }} / code-quotes=${{ needs.code-quotes.result }} / windows=${{ needs.windows.result }} / lint=${{ needs.lint.result }} / security=${{ needs.security.result }}" \
             "dev-environment 側の変更で、引用したコード（check_code_quotes.py）や版（check_versions.py）がずれた可能性があります。")"
           number="$(gh issue list --state open --search "in:title \"${TITLE}\"" --json number,title \
             --jq "map(select(.title == \"${TITLE}\")) | .[0].number // empty")"
