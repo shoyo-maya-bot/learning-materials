@@ -92,7 +92,8 @@ class CheckVersionsTest(unittest.TestCase):
 
     def write_repo(self, boot, gradle):
         (self.repo / "sample-app/build.gradle").write_text(BUILD % boot, encoding="utf-8")
-        (self.repo / "sample-app/gradle/wrapper/gradle-wrapper.properties").write_text(WRAPPER % gradle, encoding="utf-8")
+        wrapper = self.repo / "sample-app/gradle/wrapper/gradle-wrapper.properties"
+        wrapper.write_text(WRAPPER % gradle, encoding="utf-8")
         (self.repo / "local/docker-compose.yml").write_text(COMPOSE, encoding="utf-8")
 
     def page(self, text, name="10-01.md"):
@@ -114,7 +115,8 @@ class CheckVersionsTest(unittest.TestCase):
 
     def test_literal_version_in_prose_is_reported(self):
         # 採点で見つかった書き方: 本文に「Spring Boot 4.0」「Gradle 8.14」を直接書いていた
-        self.page(PAGE_OK + "\n| 言語・FW | Java 17、Spring Boot 4.0、MyBatis |\n| ビルド | Gradle 8.14（Wrapper で固定） |\n")
+        table = "\n| 言語・FW | Java 17、Spring Boot 4.0、MyBatis |\n| ビルド | Gradle 8.14（Wrapper で固定） |\n"
+        self.page(PAGE_OK + table)
         errors = self.run_all()
         self.assertEqual(len(errors), 2, errors)
         self.assertIn("Spring Boot 4.0", errors[0])

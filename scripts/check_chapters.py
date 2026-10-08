@@ -15,7 +15,15 @@ import sys
 from pathlib import Path
 
 DOCS = Path(__file__).resolve().parent.parent / "docs"
-REQUIRED = ["何か", "なぜ必要か", "どうやるか", "サンプルアプリでは", "なかったら？", "理解度チェック", "コードを読むときの確認観点"]
+REQUIRED = [
+    "何か",
+    "なぜ必要か",
+    "どうやるか",
+    "サンプルアプリでは",
+    "なかったら？",
+    "理解度チェック",
+    "コードを読むときの確認観点",
+]
 BANNED: list[str] = []  # 実案件の名前などを足す（大文字小文字を区別しない）
 CHAPTER = re.compile(r"^\d{2}-\d{2}-.+\.md$")
 
@@ -25,7 +33,7 @@ def check(path: Path) -> list[str]:
     rel = path.relative_to(DOCS)
     errs = []
     if '!!! abstract "到達目標"' not in text:
-        errs.append(f"{rel}: 到達目標（!!! abstract \"到達目標\"）がありません")
+        errs.append(f'{rel}: 到達目標（!!! abstract "到達目標"）がありません')
     heads = re.findall(r"^## (.+)$", text, re.M)
     pos = -1
     for req in REQUIRED:
