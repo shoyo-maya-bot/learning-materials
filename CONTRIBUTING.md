@@ -53,6 +53,17 @@ dev-environment のコードを引用したブロックの直前に、引用元�
 - title が `sample-app/`・`local/`・`cloud/` で始まるブロックは、コメントが無いと失敗する。説明用に書き換えた例（「例:」「悪い例」「修正案」）には付けない
 - コメントの付け方に迷ったら `python scripts/check_code_quotes.py --suggest` が、一致する引用元を提案する
 
+### 本文の行番号
+
+本文（コードブロックの外）で「`DefaultFileFetcher.java` の 33〜35 行目」「`MemberServiceTest.get_throwsNotFoundForUnknownId`（61〜67 行目）」
+のように行番号を書いたものも、`check_code_quotes.py` が固定した SHA の実物と照合します。
+
+- 照合するのは、`ファイル名`（拡張子付き。同名のファイルが複数あるときはパスで書く）か `クラス名`・`クラス名.メソッド名` の直後の「N 行目」「N〜M 行目」
+- 比べるブランチは、ページ冒頭に「読むコードは `exercise-base` ブランチ」の注記がある章と、30 実ソース読解の解答（`30-reading/answers/`）は `exercise-base`、それ以外は `main`
+- 行が存在し、空行でないこと。直後に「の `コード`」と書いたら、そのコードがその行にあること（`...` は任意の文字列）。
+  `クラス名.メソッド名` なら、その行にメソッド名があるか、その行がそのメソッドの中であること
+- ずれていると、同じコードがある行を案内する（「8 行目にあります」）。数字だけの「同じファイルの 36〜37 行目」は照合しない
+
 ### 引用元の固定
 
 `@main` / `@exercise-base` は、ブランチの最新ではなく `dev-environment-pin.json` に書いた SHA に読み替えて比べます。
@@ -90,8 +101,8 @@ render_macros: true
 pip install -r requirements.txt -c constraints.txt
 mkdocs serve          # http://127.0.0.1:8000 でプレビュー
 mkdocs build --strict # リンク切れ・nav 漏れで失敗する（CI と同じ）
-python scripts/check_chapters.py   # 章の構成（必須の見出し）を検査
-python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか（git で取得する）
+python scripts/check_chapters.py   # 章の構成（必須の見出し）と禁止語（banned-terms.txt）を検査
+python scripts/check_code_quotes.py   # 引用したコードと本文の行番号が dev-environment の実物と一致するか（git で取得する）
 python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で確かめる
 python scripts/check_versions.py --repo-dir ../dev-environment      # 本文の版が exercise-base と一致するか
 ruff check . && ruff format --check .   # scripts/・tests/ の静的解析と書式（設定は ruff.toml。CI の lint ジョブ）
