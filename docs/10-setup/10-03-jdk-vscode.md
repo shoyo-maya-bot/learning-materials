@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # 10-03 JDK と VS Code
 
 !!! abstract "到達目標"
@@ -24,7 +28,7 @@ Gradle や VS Code は、この変数を見て使う JDK を決めます。
 
 ## なぜ必要か
 
-- 本番と CI は Java 17 です。手元でも 17 以上の JDK が無いとビルドできません
+- 本番と CI は Java {{ versions.java }} です。手元でも 17 以上の JDK が無いとビルドできません
 - PC に複数の JDK が入っていると、`PATH` と `JAVA_HOME` が別の JDK を指して、思わぬ版で動くことがあります
 - 拡張機能をチームでそろえると、画面の見え方や操作の説明が全員で共通になります
 
@@ -43,7 +47,7 @@ java -version
 `openjdk version "17.0.x"` のように `17.` で始まれば OK です。
 
 !!! note "21 が入っている場合"
-    JDK 21 を使っていても、sample-app は `build.gradle` の設定で Java 17 向けにコンパイルされます。
+    JDK 21 を使っていても、sample-app は `build.gradle` の設定で Java {{ versions.java }} 向けにコンパイルされます。
     ただし、迷いを減らすために 17 を入れておくことをおすすめします。
 
 ### 2. JAVA_HOME を確認する
@@ -140,7 +144,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 ```
 
-- `options.release = 17`: どの JDK でビルドしても、Java 17 の API だけを使えるようにします
+- `options.release = {{ versions.java }}`: どの JDK でビルドしても、Java {{ versions.java }} の API だけを使えるようにします
 - `options.encoding = 'UTF-8'`: ソースの文字コードを UTF-8 に固定します。Windows の既定の文字コードに左右されません
 - `-parameters`: メソッドの引数名をクラスファイルに残します。Spring がリクエストの値を引数に渡すときに使います
 
@@ -159,13 +163,13 @@ CI（`.github/workflows/ci.yml`）では、`actions/setup-java` で Corretto 17 
 ## 理解度チェック
 
 1. `JAVA_HOME` には、JDK のどのフォルダを設定しますか。
-2. JDK 21 を入れた PC でも、sample-app が Java 17 向けにビルドされるのはなぜですか。
+2. JDK 21 を入れた PC でも、sample-app が Java {{ versions.java }} 向けにビルドされるのはなぜですか。
 3. `options.encoding = 'UTF-8'` が無いと、Windows でどんな問題が起きる可能性がありますか。
 4. 推奨の拡張機能の一覧は、どのファイルに書かれていますか。
 
 ??? note "答え"
     1. `bin` の 1 つ上の、JDK そのもののフォルダです（例: `C:\Program Files\Amazon Corretto\jdk17.x.x_x`）。
-    2. `build.gradle` で `options.release = 17` を指定しているからです。
+    2. `build.gradle` で `options.release = {{ versions.java }}` を指定しているからです。
     3. ソースの日本語（コメントや文字列）が、Windows の既定の文字コードで読まれて文字化けし、コンパイルエラーや表示の崩れが起きる可能性があります。
     4. `dev-environment/.vscode/extensions.json` です。
 

@@ -132,7 +132,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 ```
 
-`options.release = 17` により、手元の JDK が 21 でも、Java 17 にない API を使うとコンパイルエラーになります。
+`options.release = {{ versions.java }}` により、手元の JDK が 21 でも、Java {{ versions.java }} にない API を使うとコンパイルエラーになります。
 `-parameters` は、メソッドの引数名をクラスファイルに残す指定です。Spring が引数名を読むときに使います。
 
 ### 依存関係
@@ -235,7 +235,7 @@ CI も常に失敗し、本当の失敗に誰も気づかなくなります。
 4. JDK 21 の PC で、Java 21 にしかない API を使うとどうなりますか。
 
     ??? note "答え"
-        コンパイルエラーになります。`options.release = 17` で Java 17 向けにコンパイルしているためです。
+        コンパイルエラーになります。`options.release = {{ versions.java }}` で Java {{ versions.java }} 向けにコンパイルしているためです。
 
 ## コードを読むときの確認観点
 

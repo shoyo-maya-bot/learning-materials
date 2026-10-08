@@ -1,3 +1,7 @@
+---
+render_macros: true
+---
+
 # 10 環境構築
 
 この節では、自分の PC（Windows 11）に開発環境を作り、サンプルアプリ（sample-app）を動かすところまで進めます。
@@ -25,7 +29,7 @@
 |---|---|---|
 | [10-01 全体像と必要なソフト](10-01-overview.md) | 何を入れるか、それぞれ何のためか | 0.5 日 |
 | [10-02 Git と GitHub の準備](10-02-git.md) | Git のインストールと初期設定、認証、clone | 0.5 日 |
-| [10-03 JDK と VS Code](10-03-jdk-vscode.md) | Java 17、`JAVA_HOME`、VS Code と拡張機能 | 0.5 日 |
+| [10-03 JDK と VS Code](10-03-jdk-vscode.md) | Java {{ versions.java }}、`JAVA_HOME`、VS Code と拡張機能 | 0.5 日 |
 | [10-04 コンテナとローカル環境](10-04-docker-local.md) | WSL2、Rancher Desktop、DB と S3 エミュレータの起動 | 1 日 |
 | [10-05 sample-app のビルドと実行](10-05-run-sample-app.md) | ビルド、API とバッチの起動、テスト | 1.5 日 |
 | [10-06 GitHub Copilot の設定と使い方](10-06-copilot.md) | Chat・エージェントモード・指示ファイル・注意点 | 1 日 |

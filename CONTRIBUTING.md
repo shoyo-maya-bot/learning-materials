@@ -96,7 +96,7 @@ render_macros: true
 ```
 
 - `{{ versions.* }}` を使うページは、先頭に `render_macros: true` を書く（無いと `{{ }}` がそのまま表示される）
-- `scripts/check_versions.py`（CI）が、`extra.versions` と exercise-base の実ファイルを照合し、本文に直接書いた版（「Spring Boot 4.0」など）を検出する
+- `scripts/check_versions.py`（CI）が、`extra.versions` と exercise-base の実ファイルを照合し、本文に直接書いた版（「Spring Boot 4.0」「Karate 1.5」「Java 17」「`release = 17`」など）を検出する
 - コードブロックの中の版は、引用元のコメント（src:）で `check_code_quotes.py` が照合する
 
 ## 確認

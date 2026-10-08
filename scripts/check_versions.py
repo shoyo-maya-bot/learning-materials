@@ -9,7 +9,8 @@
    - spring_boot・mybatis_starter・karate・java: sample-app/build.gradle
    - gradle: sample-app/gradle/wrapper/gradle-wrapper.properties
    - postgres: local/docker-compose.yml
-2. 本文（コードブロックの外）に、版を直接書いていない（「Spring Boot 4.0」「Gradle 8.14」など）
+2. 本文（コードブロックの外）に、版を直接書いていない（「Spring Boot 4.0」「Gradle 8.14」「Karate 1.5」
+   「Java 17」「`options.release = 17`」など. Java は extra.versions.java の版だけ）
 3. {{ versions.* }} を使うページに render_macros: true がある（無いと {{ }} がそのまま表示される）
 
 コードブロックの中の版は、引用元のコメント（src:）で check_code_quotes.py が実物と照合する.
@@ -55,9 +56,18 @@ LITERAL = re.compile(
     r"|PostgreSQL\s*1\d\b"
     r"|postgresql\.org/docs/\d+"
     r"|gradle-\d+\.\d+(\.\d+)?-bin"
+    r"|\bKarate\s*v?\d+(\.\d+)+"  # 「Karate 1.5」
+    r"|karate-junit5:\d+(\.\d+)*"
 )
 # 上に加えて、extra.versions の「x.y.z」の値そのもの（「6 行目の 4.0.7」のような書き方）も本文に直接書かない
 FULL_VERSION_KEYS = ("spring_boot", "mybatis_starter", "gradle", "karate")
+# Java は sample-app の版（extra.versions.java）を直接書いたものだけを検出する.
+# 「手元の JDK 21」のような、比べるための別の版は対象外
+JAVA_LITERALS = (
+    r"\b(?:Java|JDK|java)\s*{v}(?![\d.])",  # 「Java 17」「JDK 17」
+    r"\brelease\s*=\s*{v}(?!\d)",  # 「`options.release = 17`」
+    r"java-version:\s*\"?{v}(?!\d)",  # 「`java-version: \"17\"`」
+)
 MACRO = re.compile(r"\{\{\s*versions\.(\w+)\s*\}\}")
 FRONT_MATTER_MACROS = re.compile(r"\A---\n(?:.*\n)*?render_macros:\s*true\n(?:.*\n)*?---\n")
 
@@ -130,6 +140,15 @@ def check_sources(versions: dict[str, str], src: Source) -> list[str]:
     return errors
 
 
+def literal_pattern(versions: dict[str, str]) -> re.Pattern[str]:
+    """本文に直接書いてはいけない版の正規表現（LITERAL と、extra.versions の値そのもの）."""
+    values = [versions[k] for k in FULL_VERSION_KEYS if versions.get(k, "").count(".") >= 1]
+    pattern = LITERAL.pattern + "".join(rf"|(?<![\d.]){re.escape(v)}(?![\d.])" for v in values)
+    if versions.get("java", "").isdigit():
+        pattern += "".join("|" + p.format(v=re.escape(versions["java"])) for p in JAVA_LITERALS)
+    return re.compile(pattern)
+
+
 def check_docs(docs: Path, versions: dict[str, str]) -> list[str]:
     errors = []
     for doc in sorted(docs.rglob("*.md")):
@@ -141,8 +160,7 @@ def check_docs(docs: Path, versions: dict[str, str]) -> list[str]:
         for name in used:
             if name not in versions:
                 errors.append(f"{rel}: versions.{name} は mkdocs.yml の extra.versions にありません")
-        values = [versions[k] for k in FULL_VERSION_KEYS if versions.get(k, "").count(".") >= 1]
-        literal = re.compile(LITERAL.pattern + "".join(rf"|(?<![\d.]){re.escape(v)}(?![\d.])" for v in values))
+        literal = literal_pattern(versions)
         for line_no, line in prose_lines(text):
             for m in literal.finditer(MACRO.sub("", line)):
                 errors.append(
