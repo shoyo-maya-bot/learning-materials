@@ -79,7 +79,7 @@ class CheckVersionsTest(unittest.TestCase):
         git(self.repo, "add", "-A")
         git(self.repo, "commit", "-qm", "exercise")
         git(self.repo, "branch", "exercise-base")
-        # main は版が新しい（採点で見つかった状況: main は 4.1.1・9.8.0、教材は exercise-base の 4.0.7・8.14.3）
+        # main は版が新しい（以前に起きた状況: main は 4.1.1・9.8.0、教材は exercise-base の 4.0.7・8.14.3）
         self.write_repo("4.1.1", "9.8.0")
         git(self.repo, "commit", "-qam", "main")
         self.docs = self.tmp / "docs"
@@ -114,7 +114,7 @@ class CheckVersionsTest(unittest.TestCase):
         self.assertEqual(self.run_all(), [])
 
     def test_literal_version_in_prose_is_reported(self):
-        # 採点で見つかった書き方: 本文に「Spring Boot 4.0」「Gradle 8.14」を直接書いていた
+        # 以前に見つかった書き方: 本文に「Spring Boot 4.0」「Gradle 8.14」を直接書いていた
         table = "\n| 言語・FW | Java 17、Spring Boot 4.0、MyBatis |\n| ビルド | Gradle 8.14（Wrapper で固定） |\n"
         self.page(PAGE_OK + table)
         errors = self.run_all()

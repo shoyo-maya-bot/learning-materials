@@ -42,7 +42,7 @@ class Block:
 
 
 def parse_blocks(path: Path) -> list[Block]:
-    lines = path.read_text(encoding="utf-8").split("\n")
+    lines = path.read_text(encoding="utf-8-sig").split("\n")
     blocks = []
     i = 0
     while i < len(lines):
@@ -75,7 +75,7 @@ def prose_lines(path: Path) -> list[tuple[int, str]]:
     """コードブロックの外の行（行番号は 1 始まり）."""
     out = []
     fence: str | None = None
-    for i, line in enumerate(path.read_text(encoding="utf-8").split("\n"), 1):
+    for i, line in enumerate(path.read_text(encoding="utf-8-sig").split("\n"), 1):
         m = FENCE.match(line)
         if fence is None:
             if m:
@@ -92,7 +92,7 @@ EXERCISE_NOTE = '!!! note "読むコードは `exercise-base` ブランチ"'
 
 def default_ref(doc: Path) -> str:
     """ページの既定のブランチ. 冒頭に exercise-base の注記がある章と、30 実ソース読解の解答は exercise-base."""
-    if EXERCISE_NOTE in doc.read_text(encoding="utf-8"):
+    if EXERCISE_NOTE in doc.read_text(encoding="utf-8-sig"):
         return "exercise-base"
     if doc.parent.name == "answers" and doc.parent.parent.name == "30-reading":
         return "exercise-base"
