@@ -12,17 +12,21 @@
 - `#L19-L25` は行の範囲。抜粋は `#L24-L34,L41-L65` のように範囲を並べる。
   範囲を書くと、ブロックの中身が「その行だけ」と一致することを確かめる（行番号のずれも検出）
 - 範囲を省くと、ブロックの中身がファイルのどこかにそのまま（連続して）あることを確かめる
-- `@main` / `@exercise-base` は比べるブランチ（省略すると main）
+- `@main` / `@exercise-base` は比べるブランチ（省略すると main）. 実際に比べるのは、そのブランチの最新ではなく
+  dev-environment-pin.json で固定した SHA（dev-environment の更新で教材が急に壊れないように）
 - 比べるときは空白の量と空行を無視する（インデントの違い・行末の空白・空行の有無は差分にしない）
-- ブロック内の `// ...`・`# ...`・`（省略）`・`（中略）` だけの行と、`// ...（説明）`・`// 46〜50 行目: 登録` の形のコメント行は
+- ブロック内の `// ...`・`# ...`・`（省略）`・`（中略）` だけの行と、
+  `// ...（説明）`・`// 46〜50 行目: 登録` の形のコメント行は
   「ここを飛ばした」印。前後はそれぞれ連続して一致すればよい
   （範囲を書いた場合は使わず、範囲を分けて書く）。行の一部の `（省略）` は任意の文字列に一致する
 - title が `sample-app/`・`local/`・`cloud/` で始まるブロックには、このコメントが必須（付け忘れを検出）
 - linenums="N" を付けたブロックは、N が範囲の始まりと一致していること
 
 使い方:
-  python scripts/check_code_quotes.py                       # dev-environment を取得して検査
-  python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で検査
+  python scripts/check_code_quotes.py                       # 固定した SHA の dev-environment を取得して検査
+  python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で検査（固定した SHA を含むこと）
+  python scripts/check_code_quotes.py --repo-dir ../dev-environment --ref main=HEAD
+      # 固定を外し、手元の作業中のコードと比べる（SHA を上げる前の確認）
   python scripts/check_code_quotes.py --suggest             # コメントの無いブロックに、一致する引用元を提案する
 
 終了コード: 0 問題なし / 1 問題あり
@@ -31,6 +35,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import re
 import shutil
 import subprocess
@@ -41,8 +46,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DOCS = ROOT / "docs"
+PIN_FILE = ROOT / "dev-environment-pin.json"  # 引用元の SHA の固定（ここ 1 か所）
 REPO_URL = "https://github.com/shoyo-maya-bot/dev-environment.git"
 REFS = ("main", "exercise-base")
+SHA = re.compile(r"^[0-9a-f]{40}$")
 SOURCE_PREFIXES = ("sample-app/", "local/", "cloud/")
 
 MARKER = re.compile(
@@ -79,7 +86,8 @@ class Block:
 
     @property
     def where(self) -> str:
-        return f"{self.doc.relative_to(DOCS.parent).as_posix() if DOCS.parent in self.doc.parents else self.doc}:{self.line}"
+        doc = self.doc.relative_to(DOCS.parent).as_posix() if DOCS.parent in self.doc.parents else self.doc
+        return f"{doc}:{self.line}"
 
 
 def parse_blocks(path: Path) -> list[Block]:
@@ -159,19 +167,66 @@ def parse_ranges(spec: str) -> list[tuple[int, int]]:
     return ranges
 
 
-class Source:
-    """dev-environment の clone から、ブランチごとのファイルを読む."""
+def load_pins(path: Path = PIN_FILE) -> tuple[str, dict[str, str]]:
+    """dev-environment-pin.json を読み、（リポジトリの URL, {ブランチ名: SHA}）を返す."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    refs = data.get("refs") or {}
+    for name in REFS:
+        if name not in refs:
+            raise ValueError(f"{path.name}: refs.{name} がありません")
+    for name, sha in refs.items():
+        if not SHA.match(str(sha)):
+            raise ValueError(f"{path.name}: refs.{name} は 40 桁の SHA で書いてください（{sha}）")
+    return data.get("repo_url") or REPO_URL, dict(refs)
 
-    def __init__(self, repo_dir: Path):
+
+def parse_overrides(items: list[str]) -> dict[str, str]:
+    """--ref main=HEAD の形を {ブランチ名: rev} にする."""
+    out = {}
+    for item in items:
+        name, sep, rev = item.partition("=")
+        if not sep or not name or not rev:
+            raise ValueError(f"--ref は 名前=rev の形で書いてください（{item}）")
+        out[name] = rev
+    return out
+
+
+class Source:
+    """dev-environment の clone から、ブランチごとのファイルを読む.
+
+    pins を渡すと、引用元コメントの @main などをその rev（固定した SHA）に読み替え、pins に無い名前は受け付けない.
+    pins が None なら、名前をそのままブランチとして読む（テスト用）.
+    """
+
+    def __init__(self, repo_dir: Path, pins: dict[str, str] | None = None):
         self.repo_dir = repo_dir
+        self.pins = pins
         self.cache: dict[tuple[str, str], str | None] = {}
+        self.rev_cache: dict[str, str | None] = {}
+
+    def known(self, ref: str) -> bool:
+        return self.pins is None or ref in self.pins
 
     def rev(self, ref: str) -> str | None:
-        for cand in (f"refs/remotes/origin/{ref}", f"refs/heads/{ref}", ref):
+        if ref not in self.rev_cache:
+            self.rev_cache[ref] = self._resolve(ref)
+        return self.rev_cache[ref]
+
+    def _resolve(self, ref: str) -> str | None:
+        if not self.known(ref):
+            return None
+        target = self.pins[ref] if self.pins is not None else ref
+        if SHA.match(target) or target == "HEAD":
+            # HEAD は手元の作業中のコミット（refs/remotes/origin/HEAD = リモートの main と取り違えない）
+            cands: tuple[str, ...] = (target,)
+        else:
+            cands = (f"refs/remotes/origin/{target}", f"refs/heads/{target}", target)
+        for cand in cands:
             r = subprocess.run(
                 ["git", "-C", str(self.repo_dir), "rev-parse", "--verify", "-q", f"{cand}^{{commit}}"],
                 capture_output=True,
                 text=True,
+                check=False,
             )
             if r.returncode == 0:
                 return r.stdout.strip()
@@ -183,7 +238,9 @@ class Source:
             rev = self.rev(ref)
             text = None
             if rev:
-                r = subprocess.run(["git", "-C", str(self.repo_dir), "show", f"{rev}:{path}"], capture_output=True)
+                r = subprocess.run(
+                    ["git", "-C", str(self.repo_dir), "show", f"{rev}:{path}"], capture_output=True, check=False
+                )
                 if r.returncode == 0:
                     text = r.stdout.decode("utf-8", errors="replace").replace("\r\n", "\n")
             self.cache[key] = text
@@ -194,7 +251,10 @@ class Source:
         if not rev:
             return []
         r = subprocess.run(
-            ["git", "-C", str(self.repo_dir), "ls-tree", "-r", "--name-only", rev], capture_output=True, text=True
+            ["git", "-C", str(self.repo_dir), "ls-tree", "-r", "--name-only", rev],
+            capture_output=True,
+            text=True,
+            check=False,
         )
         return [p for p in r.stdout.split("\n") if p.startswith(SOURCE_PREFIXES)]
 
@@ -204,8 +264,11 @@ def check_block(block: Block, src: Source) -> list[str]:
     if not m:
         return [f"{block.where}: 引用元コメントの書き方が違います: {block.marker.strip()}"]
     path, ref = m.group("path"), m.group("ref") or "main"
+    if not src.known(ref):
+        return [f"{block.where}: @{ref} は dev-environment-pin.json で固定していません（{', '.join(src.pins or [])}）"]
     if src.rev(ref) is None:
-        return [f"{block.where}: ブランチ {ref} が dev-environment にありません"]
+        want = f"（{src.pins[ref]}）" if src.pins else ""
+        return [f"{block.where}: {ref}{want} が dev-environment の clone にありません（git fetch が必要です）"]
     text = src.read(ref, path)
     if text is None:
         return [f"{block.where}: {path} が dev-environment の {ref} にありません"]
@@ -232,7 +295,7 @@ def check_block(block: Block, src: Source) -> list[str]:
             ]
         expected = [norm(x) for a, b in ranges for x in file_lines[a - 1 : b] if norm(x)]
         got = [s for seg in segs for s in seg]
-        if len(got) != len(expected) or not all(line_matches(g, e) for g, e in zip(got, expected)):
+        if len(got) != len(expected) or not all(line_matches(g, e) for g, e in zip(got, expected, strict=True)):
             hint = locate(segs, file_lines)
             errs.append(
                 f"{block.where}: {path}#{m.group('lines')} @{ref} と一致しません"
@@ -327,29 +390,49 @@ def suggest(block: Block, src: Source) -> str | None:
     return None
 
 
-def fetch(dest: Path, url: str) -> None:
+def fetch(dest: Path, url: str, pins: dict[str, str]) -> None:
+    """固定した SHA だけを取得し、refs/remotes/origin/<名前> に置く（ブランチの最新は見ない）."""
     subprocess.run(["git", "init", "-q", str(dest)], check=True)
-    specs = [f"+refs/heads/{r}:refs/remotes/origin/{r}" for r in REFS]
+    specs = [f"+{sha}:refs/remotes/origin/{name}" for name, sha in pins.items()]
     subprocess.run(["git", "-C", str(dest), "fetch", "-q", "--depth", "1", url, *specs], check=True)
+
+
+def open_source(repo_dir: Path | None, repo_url: str | None, overrides: list[str]) -> tuple[Source, Path | None]:
+    """引用元を用意する. 戻り値の 2 つ目は、後で消す一時ディレクトリ（--repo-dir のときは None）."""
+    url, pins = load_pins()
+    pins.update(parse_overrides(overrides))
+    if repo_dir:
+        return Source(repo_dir, pins), None
+    tmp = Path(tempfile.mkdtemp(prefix="dev-environment-"))
+    fetch(tmp, repo_url or url, {k: v for k, v in pins.items() if SHA.match(v)})
+    return Source(tmp, pins), tmp
+
+
+def add_source_args(ap: argparse.ArgumentParser) -> None:
+    ap.add_argument("--repo-dir", type=Path, help="dev-environment の clone（指定すると取得しない）")
+    ap.add_argument("--repo-url", help="取得元（既定は dev-environment-pin.json の repo_url）")
+    ap.add_argument(
+        "--ref",
+        action="append",
+        default=[],
+        metavar="名前=REV",
+        help="固定した SHA の代わりに比べる rev（例: --repo-dir ../dev-environment --ref main=HEAD）",
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--repo-dir", type=Path, help="dev-environment の clone（指定すると取得しない）")
-    ap.add_argument("--repo-url", default=REPO_URL)
+    add_source_args(ap)
     ap.add_argument("--docs", type=Path, default=DOCS)
     ap.add_argument("--suggest", action="store_true", help="コメントの無いブロックの引用元を提案する")
     args = ap.parse_args(argv)
 
-    tmp = None
     try:
-        if args.repo_dir:
-            repo = args.repo_dir
-        else:
-            tmp = Path(tempfile.mkdtemp(prefix="dev-environment-"))
-            fetch(tmp, args.repo_url)
-            repo = tmp
-        src = Source(repo)
+        src, tmp = open_source(args.repo_dir, args.repo_url, args.ref)
+    except ValueError as e:
+        print(f"NG {e}")
+        return 1
+    try:
         errors: list[str] = []
         checked = 0
         for doc in sorted(args.docs.rglob("*.md")):
@@ -371,7 +454,8 @@ def main(argv: list[str] | None = None) -> int:
 
     for e in errors:
         print(f"NG {e}")
-    print(f"引用 {checked} 件 / 問題 {len(errors)} 件")
+    pinned = ", ".join(f"{k}={str(v)[:12]}" for k, v in (src.pins or {}).items())
+    print(f"引用 {checked} 件（{pinned}）/ 問題 {len(errors)} 件")
     return 1 if errors else 0
 
 
