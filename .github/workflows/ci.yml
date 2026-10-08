@@ -12,6 +12,12 @@ on:
 permissions:
   contents: read
 
+# 同じ PR に新しいコミットが来たら、古い検査は取り消す（PR だけ）.
+# main への push と定期実行は取り消さない（公開の途中で止めない）. イベントごとに分けて、定期実行が push の待ちを押し出さないようにする
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -126,6 +132,11 @@ jobs:
     needs: [build, code-quotes, windows, lint, security]
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # 公開は 1 つずつ順番に. 実行中の公開は取り消さず最後まで、待っている古い公開は新しいものに置き換わる
+    # （古い内容が新しい内容を上書きしない）
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write

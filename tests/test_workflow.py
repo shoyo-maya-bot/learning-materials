@@ -38,6 +38,19 @@ class WorkflowTest(unittest.TestCase):
     def test_scheduled_failure_report_watches_every_check(self):
         self.assertEqual(needs(self.jobs["report-scheduled-failure"]), set(self.jobs) - NOT_CHECKS)
 
+    def test_deploy_runs_one_at_a_time_in_order(self):
+        # 後退: 公開に concurrency が無く、続けて push すると古い実行の公開が新しい公開の後に終わることがあった
+        deploy = self.jobs["deploy"]
+        self.assertRegex(deploy, r"(?m)^    concurrency:\n      group: pages\n      cancel-in-progress: false$")
+
+    def test_outdated_pull_request_runs_are_cancelled(self):
+        top = CI.read_text(encoding="utf-8").split("\njobs:\n", 1)[0]
+        m = re.search(r"(?m)^concurrency:\n  group: (?P<group>.+)\n  cancel-in-progress: (?P<cancel>.+)$", top)
+        self.assertIsNotNone(m, "ワークフローに concurrency がありません")
+        self.assertIn("github.event_name", m.group("group"))  # 定期実行が push の待ちを押し出さない
+        self.assertIn("pull_request.number", m.group("group"))
+        self.assertEqual(m.group("cancel"), "${{ github.event_name == 'pull_request' }}")
+
     def test_parser_sees_needs(self):
         self.assertEqual(needs("    needs: [a, b]\n"), {"a", "b"})
 
