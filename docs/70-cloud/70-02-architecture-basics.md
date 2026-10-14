@@ -167,35 +167,33 @@ flowchart LR
 | --- | --- |
 | ステートレス | ファイルは S3、DB のパスワードは Secrets Manager に置き、コンテナは状態を持たない |
 | 疎結合 | API は重い処理を SQS に入れて非同期にする。失敗が続くとデッドレターキューへ |
-| 障害を前提 | Step Functions が、ECS のタスク起動の一時的な失敗を 2 回まで再試行する |
+| 障害を前提 | Step Functions が、ジョブの時間の上限と、失敗したときの通知を受け持つ |
 | 可用性 | prod では API と DB を 2 台にしている |
 
-再試行の設定は、ジョブフローの定義 `cloud/modules/batch-workflow/state_machine.tf` にあります（`main.tf` の Step Functions がこの定義を使います）。
-再試行の間隔と回数は、ファイルの冒頭の `locals` に名前を付けてまとめてあります。
+失敗の扱いは、ジョブフローの定義 `cloud/modules/batch-workflow/state_machine.tf` にあります（`main.tf` の Step Functions がこの定義を使います）。
+この定義では、ジョブを起動する状態（`RunJob`）に、あえて再試行（`Retry`）を付けていません。
+理由は、定義の冒頭のコメントに書かれています。
 
-<!-- src: cloud/modules/batch-workflow/state_machine.tf#L33-L37 @main -->
-```hcl title="cloud/modules/batch-workflow/state_machine.tf（33〜37 行目）"
-  run_job_retry = {
-    IntervalSeconds = 30
-    MaxAttempts     = 2
-    BackoffRate     = 2
-  }
+<!-- src: cloud/modules/batch-workflow/state_machine.tf#L21-L24 @main -->
+```hcl title="cloud/modules/batch-workflow/state_machine.tf（21〜24 行目）"
+# RunJob は再試行しない（Retry を付けない）:
+#   ecs:runTask.sync のエラー（ECS.AmazonECSException など）は、タスクの起動前の失敗か、起動した後（終了を待つ間）の失敗かを
+#   エラー名で区別できない. 起動後の失敗で再試行すると、同じジョブの ECS タスクが 2 つ動く（二重起動）.
+#   失敗は通知（JobFailed）で人に知らせ、原因を確かめてから実行し直す（cloud/README.md の「再試行と多重実行」）
 ```
 
-ジョブを起動する状態（`RunJob`）の `Retry` は、どのエラーで再試行するか（ECS の起動の失敗）を書き、この値を `merge` で足して使います。
+ECS のエラーは、タスクが起動する前の失敗なのか、起動した後の失敗なのかを、名前だけでは区別できません。
+起動した後の失敗で自動的にやり直すと、同じジョブが 2 つ同時に動いてしまいます。
+そこで、失敗したら通知で人に知らせ、原因を確かめてから実行し直す設計にしています。
 
-<!-- src: cloud/modules/batch-workflow/state_machine.tf#L72-L72 @main -->
-```hcl title="cloud/modules/batch-workflow/state_machine.tf（72 行目）"
-      Retry      = [merge({ ErrorEquals = ["ECS.AmazonECSException"] }, local.run_job_retry)]
-```
+再試行は「一時的な失敗なら、やり直せばよい」という便利な考え方です。
+ただし、使えるのは、やり直しても結果が変わらない（冪等な）ときだけです。
+JOB0001 自体は登録済みの注文番号を飛ばすので、やり直しても二重登録にはなりません（[30-11](../30-reading/30-11-idempotent-insert.md)）。
+それでも「同時に 2 つ動く」ことまでは防げないので、ジョブフローの側では自動の再試行を付けていません。
+再試行を付けるかどうかは、冪等性と多重実行の防ぎ方とセットで決めます。
 
-値を 1 か所に置くのは、同じ値からジョブフロー全体の時間の上限（再試行で待つ分を足したもの）も計算しているためです。
-
-30 秒後、次は 60 秒後と、間隔を倍にしながら 2 回まで再試行します（指数バックオフ）。
-JOB0001 は登録済みの注文番号を飛ばすので、やり直しても二重登録になりません（[30-11](../30-reading/30-11-idempotent-insert.md)）。
-再試行と冪等性が、セットで設計されています。
 ジョブには時間の上限もあります。`RunJob` の `TimeoutSeconds`（既定は 1 時間）を超えると、ECS のタスクを止めて失敗として通知します。止まったままのジョブを残さないための設定です。
-同じ定義は、バッチの終了コードも見ています。0 なら成功、4（形式エラーの行あり）なら通知して成功扱い、8 などそれ以外なら通知して失敗にします（通知は通知用のトピックを作る設定のとき）。これで運用担当との約束（[70-01](70-01-requirements.md)）がジョブフローの結果にそのまま表れます。
+同じ定義は、バッチの終了コードも見ています。0 なら成功、4（形式エラーの行あり）なら通知して成功扱い、6（内容の違う重複があり、人が確かめる）や 8 などそれ以外なら通知して失敗にします（通知は通知用のトピックを作る設定のとき）。これで運用担当との約束（[70-01](70-01-requirements.md)）がジョブフローの結果にそのまま表れます。
 
 一方で、単一障害点も残っています。
 `cloud/modules/network/main.tf` の NAT ゲートウェイです。

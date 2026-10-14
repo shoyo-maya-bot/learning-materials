@@ -159,7 +159,7 @@ Step Functions が必要なときだけタスクを起動するので、動い�
 | --- | --- | --- |
 | 運用上の優秀性 | Terraform で全環境を同じ構造で管理。本番はパイプライン経由で反映 | — |
 | セキュリティ | private サブネット、タスクロール、Secrets Manager、S3 と DB の暗号化 | API とバッチが同じ権限を持つ（`data.aws_iam_policy_document.app` を共用） |
-| 信頼性 | API と DB を 2 台、Step Functions の再試行、SQS のデッドレターキュー | NAT ゲートウェイが 1 つ（[70-02](70-02-architecture-basics.md)）。API の自動の増減が無い |
+| 信頼性 | API と DB を 2 台、Step Functions の時間の上限と失敗の通知、SQS のデッドレターキュー | NAT ゲートウェイが 1 つ（[70-02](70-02-architecture-basics.md)）。API の自動の増減が無い |
 | パフォーマンス効率 | Fargate と Aurora で、大きさを後から変えられる | キャッシュが無い（必要かは負荷の要件しだい） |
 | コスト最適化 | バッチは必要なときだけ起動 | S3 にライフサイクルルールが無い（[70-04](70-04-aws-services.md)） |
 | 持続可能性 | マネージドサービスを中心に使う | — |
