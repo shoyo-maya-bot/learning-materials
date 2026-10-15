@@ -80,6 +80,8 @@ dev-environment の更新に教材を合わせる手順:
 2. 出てきた差分に合わせて教材を直す（引用の中身・行番号・本文の説明）
 3. `dev-environment-pin.json` の SHA を新しいコミットに上げ、教材の修正と同じ PR に入れる
 
+週 1 回の定期検査（`ci.yml` の schedule）だけは、固定した SHA ではなく各ブランチの最新と比べます（`python scripts/check_code_quotes.py --latest`。`check_versions.py` も同じ）。ずれていれば Issue が起票されるので、上の手順で教材を直し SHA を上げます。
+
 dev-environment の PR では、教材の引用検査がその PR の head に対して走ります（dev-environment 側の CI）。
 そこで差分が出たら、上の手順で教材の PR を用意します。
 

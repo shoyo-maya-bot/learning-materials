@@ -146,7 +146,7 @@ def check_line_refs_detail(doc: Path, src: Source, ref: str | None = None) -> Li
         res.errors.append(f"{rel}: {ref} が dev-environment の clone にありません（git fetch が必要です）")
         return res
     files = src.files(ref)
-    lines = doc.read_text(encoding="utf-8").split("\n")
+    lines = doc.read_text(encoding="utf-8-sig").split("\n")
     blocks: list[Block] | None = None
     errs = res.errors
     for lineno, line in prose_lines(doc):

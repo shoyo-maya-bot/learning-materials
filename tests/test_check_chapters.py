@@ -79,6 +79,23 @@ class CheckChaptersTest(unittest.TestCase):
         self.assertIn(f"20-basics/20-01-x.md:{line}: 禁止語「@gmail.com」があります", errs)
         self.assertIn("20-basics/index.md:3: 禁止語「株式会社」があります", errs)
 
+    def test_banned_terms_match_full_width_and_compatibility_forms(self):
+        # 後退: 全角・半角をそろえずに照合していたので、全角の「＠ｇｍａｉｌ．ｃｏｍ」や「㈱」をすり抜けていた
+        self.banned.write_text("株式会社\n@gmail.com\n(株)\npath:/Users/\n", encoding="utf-8")
+        self.write(
+            "20-basics/index.md",
+            "# 索引\n\n"
+            "連絡先は someone＠ＧＭＡＩＬ．ｃｏｍ です\n"  # 3: 全角の英数字・記号
+            "㈱サンプル\n"  # 4: 囲み文字（NFKC で (株)）
+            "（株）サンプル\n"  # 5: 全角の括弧
+            "保存先は ／Ｕｓｅｒｓ／taro です\n"  # 6: 全角のパス
+            "ｇｍａｉｌ の話\n",  # 7: 禁止語ではない
+        )
+        _, errs = self.run_check()
+        self.assertEqual(sorted(int(e.split(":")[1]) for e in errs), [3, 4, 5, 6], errs)
+        self.assertIn("20-basics/index.md:3: 禁止語「@gmail.com」があります", errs)
+        self.assertIn("20-basics/index.md:4: 禁止語「(株)」があります", errs)
+
     def test_local_path_terms_match_only_path_starts(self):
         # 後退: 「/Users/」を大文字小文字を区別せずどこでも探していたので、`/api/users/{id}` を誤検出した
         self.banned.write_text("C:\\Users\\\npath:/Users/\n", encoding="utf-8")

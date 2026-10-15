@@ -6,7 +6,9 @@
 - docs/ のすべての .md に、禁止語（banned-terms.txt. 実在の会社名・個人のメールアドレスなど）が無い.
   禁止語のリストが読めない・空のときも失敗にする（検査が黙って無効にならないように）.
   `path:` で始まる語（ローカルのユーザーパス）は大文字小文字を区別し、行頭・空白・クォート・括弧の直後から
-  始まるパスの形のときだけ当てる（`/api/users/{id}` のような URL の一部は誤検出しない）
+  始まるパスの形のときだけ当てる（`/api/users/{id}` のような URL の一部は誤検出しない）.
+  照合の前に、本文と禁止語の両方を NFKC で正規化する（全角の「＠ｇｍａｉｌ．ｃｏｍ」や「㈱」も当てる）
+- ページは BOM 付き（UTF-8 with BOM）でも読める（utf-8-sig）
 
 終了コード: 0 問題なし / 1 問題あり
 """
@@ -16,6 +18,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -54,7 +57,7 @@ def load_banned(path: Path = BANNED_FILE) -> list[str]:
 
 def check(path: Path, docs: Path = DOCS) -> list[str]:
     """章のページの構成."""
-    text = path.read_text(encoding="utf-8")
+    text = path.read_text(encoding="utf-8-sig")
     rel = path.relative_to(docs).as_posix()  # Windows でも / 区切りで出す
     errs = []
     if '!!! abstract "到達目標"' not in text:
@@ -88,17 +91,23 @@ def banned_matcher(term: str) -> tuple[str, re.Pattern[str]]:
     """
     if term.startswith(PATH_PREFIX):
         word = term[len(PATH_PREFIX) :].strip()
-        return word, re.compile(PATH_START + re.escape(word))
-    return term, re.compile(re.escape(term), re.IGNORECASE)
+        return word, re.compile(PATH_START + re.escape(nfkc(word)))
+    return term, re.compile(re.escape(nfkc(term)), re.IGNORECASE)
+
+
+def nfkc(text: str) -> str:
+    """全角・半角などの表記ゆれをそろえる（禁止語の照合用. 本文も禁止語もこれを通してから比べる）."""
+    return unicodedata.normalize("NFKC", text)
 
 
 def check_banned(path: Path, banned: list[str], docs: Path = DOCS) -> list[str]:
-    """禁止語. 行番号付きで返す（大文字小文字の扱いと当てる位置は banned_matcher）."""
+    """禁止語. 行番号付きで返す（大文字小文字の扱いと当てる位置は banned_matcher. 照合は NFKC で正規化して）."""
     rel = path.relative_to(docs).as_posix()  # Windows でも / 区切りで出す
     matchers = [banned_matcher(t) for t in banned]
     errs = []
-    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        errs += [f"{rel}:{lineno}: 禁止語「{name}」があります" for name, pat in matchers if pat.search(line)]
+    for lineno, line in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
+        norm = nfkc(line)
+        errs += [f"{rel}:{lineno}: 禁止語「{name}」があります" for name, pat in matchers if pat.search(norm)]
     return errs
 
 

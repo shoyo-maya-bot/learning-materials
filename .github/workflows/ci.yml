@@ -4,7 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
-  # dev-environment 側の変更で引用や版がずれたことにも気づけるよう、週 1 回も検査する（公開はしない。失敗したら Issue を起票）
+  # dev-environment 側の変更で引用や版がずれたことにも気づけるよう、週 1 回も検査する（公開はしない。失敗したら Issue を起票）.
+  # 定期実行のときだけ、code-quotes は固定した SHA ではなく dev-environment の各ブランチの最新と比べる（--latest）
   schedule:
     - cron: "41 2 * * 1"
   workflow_dispatch:
@@ -54,10 +55,14 @@ jobs:
         with:
           path: site
 
-  # 引用したコードと本文の版が dev-environment（main / exercise-base）の実物と一致するか. 一致しなければ公開（deploy）しない
+  # 引用したコードと本文の版が dev-environment（main / exercise-base）の実物と一致するか. 一致しなければ公開（deploy）しない.
+  # ふだんは dev-environment-pin.json で固定した SHA と、定期実行（schedule）のときだけ各ブランチの最新と比べる
+  # （固定した SHA どうしを比べても、dev-environment 側の変更には気づけないため）
   code-quotes:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      COMPARE_WITH: ${{ github.event_name == 'schedule' && '--latest' || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -68,9 +73,9 @@ jobs:
       - name: tests
         run: python -m unittest discover -s tests -v
       - name: check_code_quotes
-        run: python scripts/check_code_quotes.py
+        run: python scripts/check_code_quotes.py $COMPARE_WITH
       - name: check_versions
-        run: python scripts/check_versions.py
+        run: python scripts/check_versions.py $COMPARE_WITH
 
   # 執筆者の多くは Windows. 検査スクリプトとそのテストが Windows でも動くこと
   windows:
@@ -163,11 +168,13 @@ jobs:
     steps:
       - name: Issue を起票または追記
         run: |
-          body="$(printf '%s\n\n%s\n%s\n\n%s' \
+          body="$(printf '%s\n\n%s\n%s\n\n%s\n%s\n%s' \
             "週 1 回の定期実行で、教材の検査が失敗しました（$(date -u +%Y-%m-%d)）。" \
             "- 実行結果: ${RUN_URL}" \
             "- 結果: build=${{ needs.build.result }} / code-quotes=${{ needs.code-quotes.result }} / windows=${{ needs.windows.result }} / lint=${{ needs.lint.result }} / security=${{ needs.security.result }}" \
-            "dev-environment 側の変更で、引用したコード（check_code_quotes.py）や版（check_versions.py）がずれた可能性があります。")"
+            "定期実行の code-quotes は、固定した SHA（dev-environment-pin.json）ではなく dev-environment の各ブランチ（dev-environment-pin.json の refs の名前）の最新と比べています（--latest。比べた SHA は実行結果のログの「比べる dev-environment」）。" \
+            "code-quotes だけが失敗していれば、dev-environment 側の変更で引用したコードや版がずれています。教材は固定した SHA のまま公開できるので、CONTRIBUTING.md の「引用元の固定」の手順で教材を直し、SHA を上げてください（手元で: python scripts/check_code_quotes.py --latest）。" \
+            "ほかのジョブ（build・windows・lint・security）の失敗は、教材や依存の問題です（固定した SHA と比べています）。")"
           number="$(gh issue list --state open --search "in:title \"${TITLE}\"" --json number,title \
             --jq "map(select(.title == \"${TITLE}\")) | .[0].number // empty")"
           if [ -n "$number" ]; then

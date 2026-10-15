@@ -18,6 +18,10 @@
 使い方:
   python scripts/check_versions.py                                    # 固定した SHA の dev-environment を取得して検査
   python scripts/check_versions.py --repo-dir ../dev-environment      # 手元の clone で検査
+  python scripts/check_versions.py --latest
+      # 固定ではなく dev-environment の各ブランチの最新と比べる（週 1 回の定期検査）
+
+ページは BOM 付き（UTF-8 with BOM. Windows のエディタの保存形式）でも読める（utf-8-sig）.
 
 終了コード: 0 問題なし / 1 問題あり
 """
@@ -76,7 +80,7 @@ def load_versions(mkdocs_yml: Path) -> dict[str, str]:
     """mkdocs.yml の extra.versions を読む（!!python/name などのタグがあるので YAML ライブラリは使わない）."""
     versions: dict[str, str] = {}
     in_extra = in_versions = False
-    for line in mkdocs_yml.read_text(encoding="utf-8").splitlines():
+    for line in mkdocs_yml.read_text(encoding="utf-8-sig").splitlines():
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         indent = len(line) - len(line.lstrip())
@@ -152,7 +156,7 @@ def literal_pattern(versions: dict[str, str]) -> re.Pattern[str]:
 def check_docs(docs: Path, versions: dict[str, str]) -> list[str]:
     errors = []
     for doc in sorted(docs.rglob("*.md")):
-        text = doc.read_text(encoding="utf-8").replace("\r\n", "\n")
+        text = doc.read_text(encoding="utf-8-sig").replace("\r\n", "\n")
         rel = doc.relative_to(docs)
         used = MACRO.findall(text)
         if used and not FRONT_MATTER_MACROS.match(text):
@@ -180,7 +184,7 @@ def main(argv: list[str] | None = None) -> int:
     versions = load_versions(args.mkdocs)
     errors = check_docs(args.docs, versions)
     try:
-        src, tmp = open_source(args.repo_dir, args.repo_url, args.ref)
+        src, tmp = open_source(args.repo_dir, args.repo_url, args.ref, args.latest)
     except ValueError as e:
         print(f"NG {e}")
         return 1
