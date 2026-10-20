@@ -23,7 +23,7 @@ sample-app の Karate のテストは、次の 3 つのファイルでできて�
 | `sample-app/src/test/resources/karate-config.js` | 環境ごとの設定（接続先 `baseUrl`） |
 | `sample-app/src/test/java/karate/ApiKarateTest.java` | JUnit から `.feature` を実行する入口 |
 
-公式ドキュメントは [Karate](https://karatelabs.github.io/karate/) にあります。
+公式ドキュメントは [Karate](https://docs.karatelabs.io/) にあります。
 
 ## なぜ必要か
 

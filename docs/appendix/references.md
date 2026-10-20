@@ -38,7 +38,7 @@ render_macros: true
 | [JUnit](https://junit.org/) | JUnit のユーザーガイドへの入口（sample-app は JUnit 5 の書き方） |
 | [AssertJ ドキュメント](https://assertj.github.io/doc/) | `assertThat(...)` の書き方 |
 | [Mockito](https://site.mockito.org/) | モック（差し替え用の偽物）の作り方 |
-| [Karate](https://karatelabs.github.io/karate/) | API テストのシナリオ（`.feature`）の書き方 |
+| [Karate](https://docs.karatelabs.io/) | API テストのシナリオ（`.feature`）の書き方 |
 | [JaCoCo](https://www.jacoco.org/jacoco/trunk/doc/) | カバレッジの測り方とレポートの見方 |
 
 ## ビルド
