@@ -61,6 +61,8 @@
 !!! failure "悪い例"
     ```java
     // 例: メッセージだけ残し、スタックトレースと原因を捨てている
+    try {
+        lines = fetcher.readLines(location);
     } catch (IOException e) {
         log.error("読込失敗: " + e.getMessage());
         return List.of();
@@ -71,6 +73,8 @@
 !!! success "良い例"
     ```java
     // 例: 対処できないなら、原因（cause）を付けて投げ直す
+    try {
+        lines = fetcher.readLines(location);
     } catch (IOException e) {
         throw new UncheckedIOException("入力ファイルを読めません: " + location, e);
     }

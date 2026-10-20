@@ -48,7 +48,7 @@ sample-app では、取得をインタフェースの向こうに隠し、接続
     ```java
     // 例: sample-app には無いコード
     S3Client s3 = S3Client.builder().endpointOverride(URI.create("http://localhost:9090")).build();
-    List<String> lines = /* s3.getObject(...) を読む */;
+    List<String> lines = readLines(s3.getObject(request));  // 行に分ける処理は省略
     ```
 
     接続先がコードに埋め込まれ、クラウドでは動きません。テストでも S3 が必要になります。

@@ -109,7 +109,10 @@ SPRING_PROFILES_ACTIVE=local ./gradlew bootRun
 例:
 
 ```java
-@Value("${app.s3.region:ap-northeast-1}") String region
+// コンストラクタの引数で受け取る
+public ReportService(@Value("${app.s3.region:ap-northeast-1}") String region) {
+    this.region = region;
+}
 ```
 
 `@Value` で 1 項目ずつ受け取れます。

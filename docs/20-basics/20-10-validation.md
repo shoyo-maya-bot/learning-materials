@@ -68,14 +68,14 @@ public record OrderRequest(
     ```java
     // 例: @Valid が無いので、空の氏名もそのまま Service に渡る
     @PostMapping
-    public ResponseEntity<Member> register(@RequestBody RegisterRequest req) { ... }
+    public ResponseEntity<Member> register(@RequestBody RegisterRequest req) { /* ... */ }
     ```
 
 !!! success "良い例"
     ```java
     // 例: @Valid でチェックが動き、違反は MethodArgumentNotValidException になる
     @PostMapping
-    public ResponseEntity<Member> register(@Valid @RequestBody RegisterRequest req) { ... }
+    public ResponseEntity<Member> register(@Valid @RequestBody RegisterRequest req) { /* ... */ }
     ```
 
 ### 3. 違反を共通の形で返す
