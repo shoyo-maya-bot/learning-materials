@@ -2,3 +2,4 @@ site/
 .venv/
 __pycache__/
 .ruff_cache/
+.cache/

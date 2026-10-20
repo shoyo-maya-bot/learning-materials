@@ -21,6 +21,9 @@
 - 本文の「`File.java` N〜M 行目」も `check_code_quotes.py` が実物と照合する。行番号は固定した SHA のファイルを開いて数える（推測で書かない）。
   中身と照合できるよう「`File.java` N〜M 行目（`メソッド名`）」「N 行目の `コード`」の形で書く（照合できない参照は CI で失敗する）
 - 説明のために書き換えたコードは「例:」「悪い例」「修正案」と明記し、src コメントを付けない（title も `sample-app/` などで始めない）
+- そのコード例も Java の構文として正しく書く（`check_java_examples.py` が検査する）。中身を飛ばすときは `{ /* ... */ }`・`// ...`。
+  `{ ... }`・`foo(...)`・`catch` だけの断片は誤りになる
+- 挙動や仕様の説明には、公式ドキュメントへのリンクか src コメント付きの引用を根拠として添える。リンクは週 1 回 `check_links.py` が確かめる
 
 ## サンプル・固有名詞
 
@@ -40,6 +43,7 @@
 python scripts/check_chapters.py
 python scripts/check_code_quotes.py
 python scripts/check_versions.py
+python scripts/check_java_examples.py   # Java 17 以上が必要
 python -m unittest discover -s tests
 ruff check . && ruff format --check .
 mkdocs build --strict

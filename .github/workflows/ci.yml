@@ -5,7 +5,8 @@ on:
   push:
     branches: [main]
   # dev-environment 側の変更で引用や版がずれたことにも気づけるよう、週 1 回も検査する（公開はしない。失敗したら Issue を起票）.
-  # 定期実行のときだけ、code-quotes は固定した SHA ではなく dev-environment の各ブランチの最新と比べる（--latest）
+  # 定期実行のときだけ、code-quotes は固定した SHA ではなく dev-environment の各ブランチの最新と比べる（--latest）.
+  # 外部リンクの検査（links）は外部のサイトの都合で結果が変わるので、定期実行と手動実行だけで動かす（push・PR では動かさない）
   schedule:
     - cron: "41 2 * * 1"
   workflow_dispatch:
@@ -70,8 +71,21 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
+      # Java のコード例の構文検査（check_java_examples.py）に使う. 版は教材の対象（mkdocs.yml の extra.versions.java）
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: corretto
+          java-version: "17"
+      # javaparser-core を取得して SHA-256 を確かめる（版とハッシュは check_java_examples.py に固定）.
+      # テストの JavaParserTest も、この jar で実際に構文の誤りを検出できるかを確かめる
+      - name: javaparser-core
+        run: |
+          jar="$(python -c 'import sys; sys.path.insert(0, "scripts"); import check_java_examples as c; print(c.ensure_jar(None))')"
+          echo "JAVAPARSER_JAR=${jar}" >> "$GITHUB_ENV"
       - name: tests
         run: python -m unittest discover -s tests -v
+      - name: check_java_examples（「例:」などのコード例の構文）
+        run: python scripts/check_java_examples.py --jar "$JAVAPARSER_JAR"
       - name: check_code_quotes
         run: python scripts/check_code_quotes.py $COMPARE_WITH
       - name: check_versions
@@ -131,7 +145,39 @@ jobs:
       - name: 依存の脆弱性（pip-audit。constraints.txt の版で）
         run: pip-audit -r constraints.txt --progress-spinner off
 
+  # 外部リンクの検査（週 1 回の定期実行と手動実行だけ. push・PR では動かさない）.
+  # 切れていたら失敗し、report-scheduled-failure が Issue を起票する（Issue の本文に切れたリンクの一覧を入れる）
+  links:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      report: ${{ steps.links.outputs.report }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: install
+        run: pip install -r requirements.txt -c constraints.txt
+      # {{ versions.* }} を展開した後の URL を見るため、組み立てたサイトの HTML を検査する
+      - name: build
+        run: mkdocs build --strict
+      - name: check_links
+        id: links
+        run: |
+          set +e
+          python scripts/check_links.py site --report links-report.md
+          rc=$?
+          cat links-report.md >> "$GITHUB_STEP_SUMMARY"
+          delim="LINKS_$(python -c 'import secrets; print(secrets.token_hex(8))')"
+          { echo "report<<${delim}"; head -c 50000 links-report.md; echo; echo "${delim}"; } >> "$GITHUB_OUTPUT"
+          exit $rc
+
   # 公開は検査（security を含む）がすべて通ったときだけ. tests/test_workflow.py が needs を確かめる
+  # （links は push では動かないので needs に入れない. 入れると公開が止まる）
   deploy:
     if: github.event_name == 'push'
     needs: [build, code-quotes, windows, lint, security]
@@ -152,10 +198,11 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
-  # 週 1 回の検査が失敗したら Issue を起票する（同じタイトルの Issue が開いていれば、コメントを追記する）
+  # 週 1 回の検査が失敗したら Issue を起票する（同じタイトルの Issue が開いていれば、コメントを追記する）.
+  # 外部リンクだけが切れていたときは、別のタイトルの Issue にする（教材の検査の失敗と混ぜない）
   report-scheduled-failure:
     if: failure() && github.event_name == 'schedule'
-    needs: [build, code-quotes, windows, lint, security]
+    needs: [build, code-quotes, windows, lint, security, links]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -163,10 +210,36 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
-      TITLE: "週 1 回の検査（docs）が失敗しました"
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      # 教材の中の URL を含むので、式で run: に埋め込まず環境変数で渡す
+      LINKS_REPORT: ${{ needs.links.outputs.report }}
+      LINKS_RESULT: ${{ needs.links.result }}
+      OTHERS_FAILED: >-
+        ${{ needs.build.result == 'failure' || needs.code-quotes.result == 'failure' || needs.windows.result == 'failure'
+        || needs.lint.result == 'failure' || needs.security.result == 'failure' }}
     steps:
+      - name: 外部リンク切れの Issue を起票または追記
+        if: env.LINKS_RESULT == 'failure'
+        env:
+          TITLE: "外部リンクが切れています（週 1 回の検査）"
+        run: |
+          body="$(printf '%s\n\n%s\n\n%s\n\n%s' \
+            "週 1 回の定期実行で、教材の外部リンクに切れているものが見つかりました（$(date -u +%Y-%m-%d)）。" \
+            "- 実行結果: ${RUN_URL}" \
+            "${LINKS_REPORT}" \
+            "リンク先を新しい URL に直してください（手元で: mkdocs build --strict && python scripts/check_links.py site）。「確認できない」リンクは、ブラウザで開けるかを確かめてください。")"
+          number="$(gh issue list --state open --search "in:title \"${TITLE}\"" --json number,title \
+            --jq "map(select(.title == \"${TITLE}\")) | .[0].number // empty")"
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+            echo "追記: #$number"
+          else
+            gh issue create --title "$TITLE" --body "$body"
+          fi
       - name: Issue を起票または追記
+        if: env.OTHERS_FAILED == 'true'
+        env:
+          TITLE: "週 1 回の検査（docs）が失敗しました"
         run: |
           body="$(printf '%s\n\n%s\n%s\n\n%s\n%s\n%s' \
             "週 1 回の定期実行で、教材の検査が失敗しました（$(date -u +%Y-%m-%d)）。" \

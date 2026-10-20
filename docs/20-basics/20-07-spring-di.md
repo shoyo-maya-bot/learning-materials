@@ -116,7 +116,7 @@ Bean は、既定ではアプリ全体で 1 つだけ作られます（シング
     // 例: リクエストごとの値は引数で渡す
     @Service
     public class CartService {
-        public void add(String memberId, String productCode) { ... }
+        public void add(String memberId, String productCode) { /* ... */ }
     }
     ```
 

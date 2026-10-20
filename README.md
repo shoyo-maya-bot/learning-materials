@@ -31,7 +31,9 @@ mkdocs serve                       # http://127.0.0.1:8000
 python scripts/check_chapters.py   # 章の構成（到達目標・必須の見出し・演習と解答）と禁止語
 python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか
 python scripts/check_versions.py   # 本文の版（mkdocs.yml の extra.versions）が exercise-base の実物と一致するか
-mkdocs build --strict              # CI と同じ（リンク切れで失敗）
+python scripts/check_java_examples.py   # 「例:」などの Java のコード例の構文（Java 17 以上が必要）
+mkdocs build --strict              # CI と同じ（サイト内のリンク切れで失敗）
+python scripts/check_links.py site # 外部リンクの切れ（CI では週 1 回だけ）
 ```
 
 本文に書く版（Java・Spring Boot・Gradle など）は、演習で使う dev-environment の **`exercise-base` ブランチ** のものです。
@@ -40,12 +42,14 @@ mkdocs build --strict              # CI と同じ（リンク切れで失敗）
 main に push すると GitHub Pages に公開されます（初回だけ、リポジトリの Settings → Pages → Source を **GitHub Actions** にしてください）。
 引用したコードや版が dev-environment の実物（`dev-environment-pin.json` で固定した SHA）とずれていると公開しません。
 週 1 回の定期検査では、固定した SHA ではなく dev-environment の各ブランチ（main / exercise-base）の**最新**と比べ（`--latest`）、ずれていれば Issue が自動で起票されます（公開は止まりません。教材を直して SHA を上げる合図です）。
+同じ定期検査で外部リンクも確かめ、切れていれば別の Issue「外部リンクが切れています（週 1 回の検査）」が起票されます（push・PR では確かめません）。
 
 ## 変更点
 
 | 時期 | 変更 |
 |---|---|
 | 2026-10 | 本文の版を `mkdocs.yml` の `extra.versions` に集約（mkdocs-macros-plugin を追加）。引用・版の検査に通らないと公開しない |
+| 2026-10 | 「例:」などの Java のコード例の構文検査（`check_java_examples.py`）を CI に追加し、誤り 16 件を直す。外部リンクの検査（`check_links.py`）を週 1 回の定期実行に追加し、切れていたリンク 1 件（Karate の公式ドキュメント）を直す |
 
 ## セキュリティ・ライセンス
 

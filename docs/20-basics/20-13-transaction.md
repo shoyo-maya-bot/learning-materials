@@ -54,10 +54,10 @@ Controller や Mapper には付けません。
 public class ProductService {
 
     @Transactional(readOnly = true)  // 読むだけ
-    public Product get(String code) { ... }
+    public Product get(String code) { /* ... */ }
 
     @Transactional                   // 書き込みあり
-    public void changePrice(String code, int price) { ... }
+    public void changePrice(String code, int price) { /* ... */ }
 }
 ```
 
@@ -77,7 +77,7 @@ public class ProductService {
 
 ```java
 @Transactional(rollbackFor = Exception.class)
-public void importFile(Path file) throws IOException { ... }
+public void importFile(Path file) throws IOException { /* ... */ }
 ```
 
 ### 3. 例外を握りつぶさない
@@ -88,10 +88,10 @@ public void importFile(Path file) throws IOException { ... }
     ```java
     // 例: 例外を捕まえてログだけ出すと、途中までの更新がコミットされる
     @Transactional
-    public void transfer(...) {
+    public void transfer(String from, String to, int amount) {
         try {
-            mapper.decrease(...);
-            mapper.increase(...);
+            mapper.decrease(from, amount);
+            mapper.increase(to, amount);
         } catch (RuntimeException e) {
             log.warn("失敗", e);
         }
@@ -102,9 +102,9 @@ public void importFile(Path file) throws IOException { ... }
     ```java
     // 例: 例外はそのまま外へ出し、ロールバックさせる。ログは受け取った側で 1 回出す
     @Transactional
-    public void transfer(...) {
-        mapper.decrease(...);
-        mapper.increase(...);
+    public void transfer(String from, String to, int amount) {
+        mapper.decrease(from, amount);
+        mapper.increase(to, amount);
     }
     ```
 

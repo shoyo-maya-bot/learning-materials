@@ -121,7 +121,7 @@ Stream の中で外の変数を書き換えるのは避けます。
 !!! success "良い例"
     ```java
     // 例: 無ければ業務例外にする
-    return mapper.findById(id).orElseThrow(() -> new NotFoundException(...));
+    return mapper.findById(id).orElseThrow(() -> new NotFoundException(MessageIds.MEMBER_NOT_FOUND, id));
     ```
 
 `Optional` は戻り値に使います。フィールドや引数には使いません。

@@ -85,6 +85,29 @@ dev-environment の更新に教材を合わせる手順:
 dev-environment の PR では、教材の引用検査がその PR の head に対して走ります（dev-environment 側の CI）。
 そこで差分が出たら、上の手順で教材の PR を用意します。
 
+### コード例（「例:」「悪い例」「修正案」）
+
+src コメントの無い ```` ```java ```` のブロックは、`scripts/check_java_examples.py`（CI）が Java の構文として読めるかを確かめます
+（JavaParser。言語レベルは `extra.versions.java`）。型・import・メソッドの有無は見ません。
+
+- 断片でよい。「ファイル全体」「クラスの中身（フィールド・メソッド）」「メソッドの中身（文の並び）」のどれかとして読めれば通る
+- 中身を飛ばすときは `{ /* ... */ }`・`// ...` と書く。`{ ... }`・`foo(...)` は構文の誤りになる（`...`・`（省略）` だけの行はコメントとして扱う）
+- 引数や変数は、それらしい名前を書く（`transfer(String from, String to, int amount)`）。`catch` だけの断片にせず `try {` から書く
+- わざと構文が誤ったコードを見せるときだけ、直前に `<!-- java-syntax: skip 理由 -->` を書く（理由は必須）
+- 手元では Java 17 以上が必要（初回は javaparser-core を `.cache/` に取得する）: `python scripts/check_java_examples.py`
+
+### 外部リンク
+
+外部のドキュメントへのリンクは、週 1 回の定期実行（`ci.yml` の `links`。手動実行もできる）で切れていないかを確かめます。
+外部のサイトの都合で結果が変わるため、push や PR では確かめません。切れていると Issue「外部リンクが切れています（週 1 回の検査）」が起票されるので、
+公式の新しい URL に直します。手元では `mkdocs build --strict && python scripts/check_links.py site`。
+
+### 本文の主張（人のレビュー）
+
+本文の説明（「〜するとロールバックされる」「〜は非推奨」など）は、CI では正しさを確かめられません。
+挙動や仕様の説明には、公式ドキュメントへのリンクか、sample-app の引用（src コメント付き）を根拠として添えます。
+根拠を添えられない主張は書かないか、PR で根拠を示してレビューを受けます（PR のテンプレートのチェック項目）。
+
 ## 版の書き方
 
 本文（コードブロックの外）に版を直接書かず、`mkdocs.yml` の `extra.versions` を参照します。値は `exercise-base` ブランチのものです。
@@ -111,6 +134,8 @@ python scripts/check_chapters.py   # 章の構成（必須の見出し）と禁�
 python scripts/check_code_quotes.py   # 引用したコードと本文の行番号が dev-environment の実物と一致するか（git で取得する）
 python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の clone で確かめる
 python scripts/check_versions.py --repo-dir ../dev-environment      # 本文の版が exercise-base と一致するか
+python scripts/check_java_examples.py   # 「例:」などのコード例が Java の構文として読めるか（Java 17 以上が必要）
+python scripts/check_links.py site      # 外部リンク（mkdocs build の後. CI では週 1 回だけ）
 ruff check . && ruff format --check .   # scripts/・tests/ の静的解析と書式（設定は ruff.toml。CI の lint ジョブ）
 ```
 
