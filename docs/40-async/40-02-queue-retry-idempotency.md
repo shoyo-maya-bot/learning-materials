@@ -59,9 +59,10 @@ sample-app の依存関係には SQS が無いので、使うときは `software
 
 ```java
 // 送る内容を record で表し、JSON への変換は Jackson に任せる（objectMapper は Spring が用意したものを注入する）
-record OrderMessage(String orderNo) {}
+// memberId の型は sample-app の Order（long memberId）にそろえる
+record OrderMessage(String orderNo, long memberId) {}
 
-String body = objectMapper.writeValueAsString(new OrderMessage(orderNo));
+String body = objectMapper.writeValueAsString(new OrderMessage(orderNo, memberId));
 sqs.sendMessage(SendMessageRequest.builder()
         .queueUrl(queueUrl)
         .messageBody(body)
@@ -70,7 +71,7 @@ sqs.sendMessage(SendMessageRequest.builder()
 
 !!! failure "悪い例: JSON を文字列の連結で作る"
     ```java
-    String body = "{\"orderNo\":\"" + orderNo + "\"}";   // まねしない
+    String body = "{\"orderNo\":\"" + orderNo + "\",\"memberId\":" + memberId + "}";   // まねしない
     ```
     `orderNo` に `"` や `\` が入っていると、壊れた JSON になります（受け手で解析に失敗する）。
     値によっては、別の項目を紛れ込ませることもできてしまいます。
@@ -128,7 +129,10 @@ for (Message m : res.messages()) {
 
 受け手が失敗すると、メッセージは削除されずに残り、再び受信されます。
 これが SQS の再試行です。
-同じメッセージが **最大受信回数**（`maxReceiveCount`）を超えると、DLQ に移されます。
+同じメッセージの **受信回数** が **最大受信回数**（`maxReceiveCount`）を超えると、DLQ に移されます。
+`maxReceiveCount` が 5 なら、受け手が処理を試みるのは 5 回までです。
+5 回とも失敗すると、6 回目に受信されるはずのときに受け手へは渡されず、DLQ に移ります
+（[AWS のドキュメント: デッドレターキュー](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)）。
 
 失敗には 2 種類あります。
 
@@ -151,6 +155,12 @@ DLQ にメッセージが入ったら監視で気付けるようにし、運用�
 
 1. **業務キーの一意制約で重複を弾く**: 注文番号などに一意制約を付け、既にあれば登録しない
 2. **処理済みのメッセージを記録する**: メッセージ ID を処理済みテーブルに入れ、既にあれば何もしない
+
+!!! warning "メッセージ ID では、送り手の再送は弾けない"
+    メッセージ ID は、SQS が送信のたびに新しく付けます。
+    送り手が送信のタイムアウトなどで同じ内容を送り直すと、別のメッセージ ID の 2 通になります。
+    方法 2 で弾けるのは、SQS が同じメッセージを 2 回届けた場合だけです。
+    送り手の再送も弾くには、方法 1 の業務キー（注文番号など）か、送り手が本文に入れる冪等キー（処理ごとに 1 つ決める ID）を記録します。
 
 !!! failure "悪い例"
     ```java
@@ -210,7 +220,7 @@ resource "aws_sqs_queue" "this" {
 | 変数 | 既定値 | 意味 |
 | --- | --- | --- |
 | `visibility_timeout_seconds` | 300 | 処理中のメッセージを他から見えなくする時間（処理時間より長く） |
-| `max_receive_count` | 5 | この回数失敗したらデッドレターキューへ |
+| `max_receive_count` | 5 | 受信回数がこの値を超えたらデッドレターキューへ（5 回失敗した後、6 回目の受信の代わりに移る） |
 
 DLQ は `message_retention_seconds = 1209600`（14 日）で、調べる時間を確保しています。
 
@@ -288,7 +298,9 @@ ECS タスクの起動の失敗（一時的な失敗）だけを、30 秒・60 �
 3. sample-app のクラウド構成で、同じメッセージの処理に 5 回失敗すると、そのメッセージはどうなりますか。
 
     ??? note "答え"
-        `max_receive_count` の既定値 5 を超えるので、DLQ（`<name>-dlq`）に移されます。
+        5 回目の失敗の時点では、受信回数は 5 で、`max_receive_count` の既定値 5 を超えていません。
+        可視性タイムアウトの後、次（6 回目）に受信されるとき、受信回数が 5 を超えるので、受け手には渡されず DLQ（`<name>-dlq`）に移されます。
+        つまり処理が試みられるのは 5 回までです。
         DLQ では 14 日間保持されるので、その間に原因を調べ、直してから元のキューへ戻します。
 
 4. 「メッセージの形式誤り」で失敗したメッセージを、何度も再試行する意味はありますか。

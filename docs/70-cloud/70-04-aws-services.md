@@ -224,7 +224,7 @@ resource "aws_sqs_queue" "this" {
 }
 ```
 
-既定値は、可視性タイムアウト 300 秒、5 回受信しても成功しなければデッドレターキューへ移す、です。
+既定値は、可視性タイムアウト 300 秒、最大受信回数 5（5 回受信しても成功しなければ、次の受信の代わりにデッドレターキューへ移す）、です。
 ログは CloudWatch Logs に送られ、30 日で消えます（`cloud/modules/ecs-service/variables.tf` の `log_retention_days`）。
 
 ## もしサービスの違いを知らなかったら？

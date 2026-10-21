@@ -97,6 +97,59 @@ class ExamplesTest(unittest.TestCase):
             cj.ensure_jar(self.tmp / "none.jar")
 
 
+RECORD_PAGE = """# 章
+
+例:
+
+```java
+record OrderMessage(String orderNo, @NotNull @Size(max = 20) String code) {}
+```
+
+!!! success "良い例"
+    ```java
+    OrderMessage msg = parse(body);
+    pointMapper.addPoint(msg.memberId(), 100);
+    log.info("{}", msg.orderNo(), msg.toString());
+    ```
+
+```java
+public record Result(List<String> errors) {
+    public boolean hasErrors() {
+        return !errors.isEmpty();
+    }
+}
+Result r = run();
+if (r.hasErrors()) { r.errors(); }
+```
+"""
+
+
+class RecordAccessorTest(unittest.TestCase):
+    """第 7 回: record に無いアクセサを呼ぶコード例（40-02 の OrderMessage.memberId）を Java なしで見つける."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(rmtree, self.tmp)
+
+    def test_unknown_accessor_is_reported_with_doc_line(self):
+        page = self.tmp / "page.md"
+        page.write_text(RECORD_PAGE, encoding="utf-8")
+        errors = cj.record_accessor_errors(page)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn(":12: msg.memberId() — record OrderMessage に memberId がありません", errors[0])
+        self.assertIn("code, orderNo", errors[0])  # 注釈の括弧の中のカンマで分けない
+
+    def test_records_reads_components_and_body_methods(self):
+        found = cj.records("record A(int a, Map<String, List<Integer>> b) { int twice() { return a * 2; } }")
+        self.assertEqual(found, {"A": {"a", "b", "twice"}})
+
+    def test_current_docs_have_no_unknown_accessors(self):
+        errors = []
+        for doc in sorted((ROOT / "docs").rglob("*.md")):
+            errors += cj.record_accessor_errors(doc)
+        self.assertEqual(errors, [])
+
+
 JAR = os.environ.get("JAVAPARSER_JAR")
 
 

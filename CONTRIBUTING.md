@@ -88,7 +88,10 @@ dev-environment の PR では、教材の引用検査がその PR の head に�
 ### コード例（「例:」「悪い例」「修正案」）
 
 src コメントの無い ```` ```java ```` のブロックは、`scripts/check_java_examples.py`（CI）が Java の構文として読めるかを確かめます
-（JavaParser。言語レベルは `extra.versions.java`）。型・import・メソッドの有無は見ません。
+（JavaParser。言語レベルは `extra.versions.java`）。型・import・メソッドの有無は、ほぼ見ません。
+例外として、同じページで宣言した record の変数に、その record に無いアクセサを呼んでいないか（`msg.memberId()` など）だけは確かめます。
+
+- コード例の型は sample-app にそろえる（会員 ID は `long memberId`、注文番号は `String orderNo`）。前に見せた record・インターフェースと、後の例で呼ぶメソッドを食い違わせない
 
 - 断片でよい。「ファイル全体」「クラスの中身（フィールド・メソッド）」「メソッドの中身（文の並び）」のどれかとして読めれば通る
 - 中身を飛ばすときは `{ /* ... */ }`・`// ...` と書く。`{ ... }`・`foo(...)` は構文の誤りになる（`...`・`（省略）` だけの行はコメントとして扱う）

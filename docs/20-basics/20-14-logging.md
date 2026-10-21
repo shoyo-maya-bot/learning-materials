@@ -80,6 +80,7 @@ private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 !!! success "良い例"
     ```java
     // 例: 例外を最後の引数に渡し、スタックトレースを残す
+    // IMPORT_FAILED は説明用の架空の ID（sample-app の MessageIds には無い）
     log.error("{} 取込に失敗しました", MessageIds.IMPORT_FAILED, e);
     ```
 
@@ -114,6 +115,7 @@ private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 !!! success "良い例"
     ```java
     // 例: 個人を直接示さない ID と結果だけを出す
+    // LOGIN_SUCCEEDED は説明用の架空の ID（sample-app の MessageIds には無い）
     log.info("{} ログイン成功 memberId={}", MessageIds.LOGIN_SUCCEEDED, memberId);
     ```
 
