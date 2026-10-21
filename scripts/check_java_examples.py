@@ -10,6 +10,8 @@ src コメントの付いた引用は check_code_quotes.py が dev-environment �
 - 「ここを飛ばした」印の行（`...`・`…`・`（省略）`・`（中略）` だけの行）はコメントとして扱う。
   式の途中を飛ばすときは `/* ... */` と書く（`foo(...)` のような書き方は構文の誤りになる）
 - わざと構文が誤ったコードを見せるブロックは、直前に `<!-- java-syntax: skip 理由 -->` を書くと検査しない（理由は必須）
+- 型の食い違いのうち、機械で見つけやすいものだけを Java なしで確かめる: 同じページで宣言した record の変数に、
+  その record に無いアクセサ（`msg.memberId()` など）を呼んでいないか（record_accessor_errors）
 
 使い方:
   python scripts/check_java_examples.py                 # javaparser-core を取得（.cache/）して検査
@@ -179,6 +181,97 @@ def check(targets: list[Example], jar: Path, level: str) -> list[str]:
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+RECORD = re.compile(r"\brecord\s+(?P<name>[A-Z]\w*)\s*(?:<[^>]*>)?\s*\(")
+OBJECT_METHODS = {"equals", "hashCode", "toString", "getClass"}
+
+
+def _closing(text: str, start: int, open_ch: str, close_ch: str) -> int:
+    """text[start] が open_ch のとき、対応する close_ch の位置（無ければ -1）."""
+    depth = 0
+    for i in range(start, len(text)):
+        if text[i] == open_ch:
+            depth += 1
+        elif text[i] == close_ch:
+            depth -= 1
+            if depth == 0:
+                return i
+    return -1
+
+
+def _split_top(text: str) -> list[str]:
+    """カンマで分ける（括弧・山括弧の中のカンマでは分けない）."""
+    parts, depth, cur = [], 0, ""
+    for ch in text:
+        if ch in "(<[":
+            depth += 1
+        elif ch in ")>]":
+            depth -= 1
+        if ch == "," and depth == 0:
+            parts.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    parts.append(cur)
+    return [x for x in parts if x.strip()]
+
+
+def records(text: str) -> dict[str, set[str]]:
+    """Java のテキストで宣言した record → 呼べるメソッド名（コンポーネントのアクセサと本体で宣言したメソッド）."""
+    out: dict[str, set[str]] = {}
+    for m in RECORD.finditer(text):
+        open_at = m.end() - 1
+        close_at = _closing(text, open_at, "(", ")")
+        if close_at < 0:
+            continue
+        names = set()
+        for comp in _split_top(text[open_at + 1 : close_at]):
+            words = re.findall(r"\w+", re.sub(r"@\w+(?:\([^)]*\))?", " ", comp))
+            if words:
+                names.add(words[-1])
+        rest = text[close_at + 1 :]
+        body = re.match(r"\s*(?:implements\s+[\w.<>, ]+)?\s*\{", rest)
+        if body:
+            start = close_at + 1 + body.end() - 1
+            end = _closing(text, start, "{", "}")
+            names |= set(re.findall(r"\b(\w+)\s*\([^;{}]*\)\s*(?:throws\s+[\w., ]+)?\{", text[start + 1 : end]))
+        out[m.group("name")] = names
+    return out
+
+
+def record_accessor_errors(doc: Path) -> list[str]:
+    """同じページで宣言した record の変数に、その record に無いメソッドを呼んでいるコード例.
+
+    例: `record OrderMessage(String orderNo) {}` を見せたあとで `OrderMessage msg = ...; msg.memberId()` と書く
+    （コンパイルできない）。src コメントの付いた引用の record も宣言として数えるが、確かめるのはコード例だけ。
+    """
+    blocks = [b for b in parse_blocks(doc) if is_java(b)]
+    known: dict[str, set[str]] = {}
+    for b in blocks:
+        known.update(records("\n".join(b.body)))
+    if not known:
+        return []
+    errors = []
+    types = "|".join(map(re.escape, known))
+    decl = re.compile(rf"\b(?P<type>{types})\s+(?P<var>[a-z]\w*)\s*[=;:,)]")
+    for b in blocks:
+        if b.marker:
+            continue
+        text = "\n".join(b.body)
+        variables = {m.group("var"): m.group("type") for m in decl.finditer(text)}
+        for var, typ in variables.items():
+            for call in re.finditer(rf"\b{re.escape(var)}\.(?P<m>\w+)\s*\(", text):
+                name = call.group("m")
+                if name in known[typ] or name in OBJECT_METHODS:
+                    continue
+                line = b.line + text[: call.start()].count("\n") + 1
+                doc_name = b.where.rsplit(":", 1)[0]
+                errors.append(
+                    f"{doc_name}:{line}: {var}.{name}() — record {typ} に {name} がありません"
+                    f"（このページの {typ} の宣言: {', '.join(sorted(known[typ])) or 'なし'}）"
+                )
+    return errors
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--docs", type=Path, default=DOCS)
@@ -192,6 +285,7 @@ def main(argv: list[str] | None = None) -> int:
         exs, errs = examples(doc)
         all_examples += exs
         errors += errs
+        errors += record_accessor_errors(doc)
     targets = [ex for ex in all_examples if ex.skip_reason is None]
     skipped = [ex for ex in all_examples if ex.skip_reason is not None]
     if args.list:

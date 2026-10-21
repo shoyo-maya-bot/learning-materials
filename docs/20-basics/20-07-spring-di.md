@@ -107,7 +107,7 @@ Bean は、既定ではアプリ全体で 1 つだけ作られます（シング
     // 例: リクエストごとの値を Bean のフィールドに置く
     @Service
     public class CartService {
-        private String currentMemberId; // 他のリクエストに上書きされる
+        private long currentMemberId; // 他のリクエストに上書きされる
     }
     ```
 
@@ -116,7 +116,7 @@ Bean は、既定ではアプリ全体で 1 つだけ作られます（シング
     // 例: リクエストごとの値は引数で渡す
     @Service
     public class CartService {
-        public void add(String memberId, String productCode) { /* ... */ }
+        public void add(long memberId, String productCode) { /* ... */ }
     }
     ```
 

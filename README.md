@@ -49,6 +49,7 @@ main に push すると GitHub Pages に公開されます（初回だけ、リ�
 | 時期 | 変更 |
 |---|---|
 | 2026-10 | 本文の版を `mkdocs.yml` の `extra.versions` に集約（mkdocs-macros-plugin を追加）。引用・版の検査に通らないと公開しない |
+| 2026-10 | 40-02 の誤り（`OrderMessage` に無い `memberId`、DLQ に移る回数、メッセージ ID の重複排除では送り手の再送を弾けないこと）を直す。コード例の型を sample-app にそろえ（20-07・20-16）、record に無いアクセサを呼ぶコード例を `check_java_examples.py` で検出する |
 | 2026-10 | 「例:」などの Java のコード例の構文検査（`check_java_examples.py`）を CI に追加し、誤り 16 件を直す。外部リンクの検査（`check_links.py`）を週 1 回の定期実行に追加し、切れていたリンク 1 件（Karate の公式ドキュメント）を直す |
 
 ## セキュリティ・ライセンス
