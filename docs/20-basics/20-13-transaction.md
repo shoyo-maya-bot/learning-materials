@@ -282,3 +282,7 @@ Job は Spring が作った `service`（プロキシ）を呼ぶので、`@Trans
 - [ ] バッチのコミット単位が設計書どおりで、途中失敗後の再実行が安全である
 
 参考: [Spring Framework: 宣言的トランザクション](https://docs.spring.io/spring-framework/reference/data-access/transaction/declarative.html)、[PostgreSQL 文書: トランザクション](https://www.postgresql.org/docs/{{ versions.postgres }}/tutorial-transactions.html)
+
+!!! tip "案件担当として"
+    この章の内容を「なぜそうするか」まで説明できるようになったら、[80-10 一括コミットと中間コミット](../80-case-owner/80-10-commit-unit.md) に進みます。
+    設計書のトランザクションの情報からコミットの単位を選び、エラー時の DB の状態を説明する練習です。

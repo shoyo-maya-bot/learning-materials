@@ -265,3 +265,7 @@ Windows と Linux・Mac で改行コードが混ざると、変更していな�
 - [ ] レビュー指摘に MUST / WANT / NITS / Q の区分が付き、すべてに返答がある
 
 参考: [Pro Git（日本語）](https://git-scm.com/book/ja/v2)、[GitHub Docs: プルリクエスト](https://docs.github.com/ja/pull-requests)
+
+!!! tip "案件担当として"
+    この章の内容を「なぜそうするか」まで説明できるようになったら、[80-09 ブランチ戦略とコンフリクト対応](../80-case-owner/80-09-branch-conflict.md) に進みます。
+    ブランチの決まりの意図を理解し、コンフリクトや誤った push に対処する練習です。

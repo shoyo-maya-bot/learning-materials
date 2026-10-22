@@ -261,3 +261,7 @@ tasks.named('test') {
 - [ ] 期待値が設計書から決められている
 
 参考: [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)、[AssertJ](https://assertj.github.io/doc/)
+
+!!! tip "案件担当として"
+    この章の内容を「なぜそうするか」まで説明できるようになったら、[80-08 テスト観点の抽出とカバレッジ](../80-case-owner/80-08-test-viewpoints.md) に進みます。
+    テスト観点（同値分割・境界値・異常系）を自分で抽出し、C1 の妥当性を判断する練習です。
