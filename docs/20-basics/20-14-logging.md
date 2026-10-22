@@ -255,3 +255,7 @@ logging:
 - [ ] バッチの開始・終了と件数が INFO で残る
 
 参考: [SLF4J マニュアル](https://www.slf4j.org/manual.html)、[Spring Boot: Logging](https://docs.spring.io/spring-boot/reference/features/logging.html)
+
+!!! tip "案件担当として"
+    この章の内容を「なぜそうするか」まで説明できるようになったら、[80-12 共通項目の部品とログレベルの運用](../80-case-owner/80-12-common-columns-logging.md) に進みます。
+    ログレベルを誤ったときに運用で起きること（監視の見逃し・誤報）を説明する練習です。
