@@ -137,8 +137,8 @@ dev-environment の `cloud/` には、同じ sample-app を動かす 2 つの構
 
 ### 簡易環境: EC2 と RDS
 
-<!-- src: cloud/simple/main.tf#L95-L109 @main -->
-```hcl title="cloud/simple/main.tf（95〜109 行目）"
+<!-- src: cloud/simple/main.tf#L110-L124 @main -->
+```hcl title="cloud/simple/main.tf（110〜124 行目）"
 resource "aws_db_instance" "db" {
   identifier                  = "${var.system_name}-postgres"
   engine                      = "postgres"
@@ -162,11 +162,13 @@ resource "aws_db_instance" "db" {
 
 `manage_master_user_password = true` は、パスワードを Secrets Manager に作らせる設定です。
 パスワードは Terraform のコードにも、状態ファイルにも書かれません。
+EC2 のロールには、このシークレットだけを読む権限（`secretsmanager:GetSecretValue` など）を付けています。
+アプリの接続設定を作るときに、EC2 の中からパスワードを読むためです。
 
 EC2 には SSH の鍵を使わず、Session Manager で入ります。
 
-<!-- src: cloud/simple/main.tf#L69-L72,L79-L79,L86-L88 @main -->
-```hcl title="cloud/simple/main.tf（69〜72 行目と、79〜88 行目の抜粋）"
+<!-- src: cloud/simple/main.tf#L69-L72,L94-L94,L101-L103 @main -->
+```hcl title="cloud/simple/main.tf（69〜72 行目と、94〜103 行目の抜粋）"
 resource "aws_iam_role_policy_attachment" "ssm" {
   role       = aws_iam_role.web.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"

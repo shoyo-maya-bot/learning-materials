@@ -2,7 +2,7 @@
   "_comment": "教材が引用・照合する dev-environment のコミット（SHA で固定）. 引用元コメントの @main / @exercise-base は、ここの SHA に読み替える. dev-environment の更新に教材を合わせるときは、教材を直してからここの SHA を上げる（CONTRIBUTING.md の「引用元の固定」）",
   "repo_url": "https://github.com/shoyo-maya-bot/dev-environment.git",
   "refs": {
-    "main": "e65f06580ebeb7d05e3647cb840f0c60bdabf201",
+    "main": "7c8156086595f0b06235997d91eac6ac6d1a9d5a",
     "exercise-base": "038cd4200622d0032bdb13aa889ab912d7bfa2e2"
   }
 }

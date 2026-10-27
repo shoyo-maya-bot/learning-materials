@@ -170,28 +170,30 @@ RPO が 1 時間なら、少なくとも 1 時間ごとにデータを別の場�
 dev-environment の `cloud/` は、sample-app を AWS で動かす構成です。
 環境ごとの違いが、非機能要件の違いとして読めます。
 
-<!-- src: cloud/environments/prod/main.tf#L2-L9 @main -->
-```hcl title="cloud/environments/prod/main.tf（2〜9 行目）"
+<!-- src: cloud/environments/prod/main.tf#L2-L10 @main -->
+```hcl title="cloud/environments/prod/main.tf（2〜10 行目）"
 locals {
-  name                 = "${var.system_name}-prod"
-  enable_nat_gateway   = true
-  db_instance_count    = 2
-  protect_data         = true
-  api_desired_count    = 2
-  enable_vpc_endpoints = false
+  name                   = "${var.system_name}-prod"
+  enable_nat_gateway     = true
+  db_instance_count      = 2
+  protect_data           = true
+  skip_db_final_snapshot = false
+  api_desired_count      = 2
+  enable_vpc_endpoints   = false
 }
 ```
 
-<!-- src: cloud/environments/dev1/main.tf#L2-L10 @main -->
-```hcl title="cloud/environments/dev1/main.tf（2〜10 行目）"
+<!-- src: cloud/environments/dev1/main.tf#L2-L11 @main -->
+```hcl title="cloud/environments/dev1/main.tf（2〜11 行目）"
 # dev1 は学習・試作用で、本番用ではない。NAT を置かない代わりに VPC エンドポイントで ECR・S3・Secrets Manager などに届かせる（費用は cloud/README.md）
 locals {
-  name                 = "${var.system_name}-dev1"
-  enable_nat_gateway   = false
-  db_instance_count    = 1
-  protect_data         = false
-  api_desired_count    = 1
-  enable_vpc_endpoints = true
+  name                   = "${var.system_name}-dev1"
+  enable_nat_gateway     = false
+  db_instance_count      = 1
+  protect_data           = false
+  skip_db_final_snapshot = true
+  api_desired_count      = 1
+  enable_vpc_endpoints   = true
 }
 ```
 
@@ -200,11 +202,16 @@ locals {
 | `api_desired_count` | 1 | 2 | 可用性（1 台が止まっても動き続ける） |
 | `db_instance_count` | 1 | 2 | 可用性（DB の切り替え先を持つ） |
 | `protect_data` | false | true | 運用・保守性（誤って消さない） |
+| `skip_db_final_snapshot` | true | false | 運用・保守性（DB を消すときにデータを残す） |
 | `enable_nat_gateway` | false | true | 環境の制約と費用 |
 | `enable_vpc_endpoints` | true | false | 環境の制約と費用（NAT の代わりの通り道） |
 
 本番だけ台数を増やしているのは、「本番は止めない、開発は安く」という要件を構成に表したものです。
 コードの構造は同じで、値だけを変えています。
+
+`protect_data`（DB の削除保護など）と `skip_db_final_snapshot`（DB を消すときに最終スナップショットを取らない）は、別の値にしてあります。
+片方に連動させると、作り直しのために削除保護を外した時点で、スナップショットも取られなくなるためです。
+「誤って消さない」と「消すときに残す」は、別々の要件として決めます。
 
 `enable_nat_gateway` と `enable_vpc_endpoints` は、裏表の関係です。
 外に出る入口を持たない private サブネットのコンテナも、イメージの取得（ECR）や S3・Secrets Manager には届く必要があります。
