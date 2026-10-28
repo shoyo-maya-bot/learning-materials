@@ -115,8 +115,10 @@ curl -i -X POST http://localhost:8080/api/v1/members \
 同じコマンドをもう一度実行すると、メールアドレスが重複するため `409` とエラーの JSON が返ります。
 
 ```json
-{"messageId":"APPE0003","message":"このメールアドレスは既に登録されています（new@example.com）。","details":[]}
+{"messageId":"APPE0003","message":"このメールアドレスでは登録できません。","details":[]}
 ```
+
+応答には、送ったメールアドレスを入れていません（入力した値を応答に映さない）。
 
 !!! tip "PowerShell で curl を使うとき"
     Windows PowerShell 5.1 の `curl` は、別のコマンド（`Invoke-WebRequest`）の別名です。
@@ -201,7 +203,17 @@ echo $?        # PowerShell なら: $LASTEXITCODE
 <!-- src: sample-app/src/main/java/com/example/sample/SampleApplication.java @main -->
 ```java
 public static void main(String[] args) {
-    ConfigurableApplicationContext ctx = SpringApplication.run(SampleApplication.class, args);
+    boolean batch = batchRequested(args, System.getProperty("spring.profiles.active"), System.getenv("SPRING_PROFILES_ACTIVE"));
+    ConfigurableApplicationContext ctx;
+    try {
+        ctx = SpringApplication.run(SampleApplication.class, args);
+    } catch (RuntimeException | Error e) {
+        // Spring が原因をログに出している. バッチなら終了コードを決まりどおりにする
+        if (batch) {
+            System.exit(startupFailureExitCode());
+        }
+        throw e;
+    }
     if (ctx.getEnvironment().matchesProfiles("batch")) {
         System.exit(SpringApplication.exit(ctx));
     }
@@ -209,19 +221,23 @@ public static void main(String[] args) {
 ```
 
 `batch` プロファイルのときだけ、アプリを終了して終了コードを返します。
+バッチの起動そのものが失敗したとき（DB につながらない・設定の誤りなど）も、決まりどおり終了コード 8 で終えます（何もしないと JVM の既定の 1 になる）。
+バッチかどうかは、Spring の起動前に分かる値（起動引数・システムプロパティ・環境変数のプロファイル）で決めています。
 `application-batch.yml` の `web-application-type: none` で、Web サーバーも立ち上げません。
 
 ジョブ本体は `sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java` です。
 
 <!-- src: sample-app/src/main/java/com/example/sample/order/batch/OrderImportJob.java @main -->
 ```java
+@Profile("batch")
 @Component
 @ConditionalOnProperty(name = "app.batch.job", havingValue = "JOB0001")
 public class OrderImportJob implements BatchJob, ApplicationRunner, ExitCodeGenerator {
 ```
 
-- `@ConditionalOnProperty`: `--app.batch.job=JOB0001` を渡したときだけ、このクラスが有効になります。API として起動したときは動きません
-- `BatchJob`: ジョブ ID（`JOB0001`）を返すバッチの共通インタフェースです。ジョブ ID の誤りや指定漏れは `BatchJobGuard` が見つけ、終了コード 8 にします
+- `@Profile("batch")`: `batch` プロファイルのときだけ登録します。API として起動したときは、`--app.batch.job=JOB0001` が付いていても動きません
+- `@ConditionalOnProperty`: `--app.batch.job=JOB0001` を渡したときだけ、このクラスが有効になります（値の大文字小文字は区別しません）
+- `BatchJob`: ジョブ ID（`JOB0001`）を返すバッチの共通インタフェースです。ジョブ ID の誤りや指定漏れは `BatchJobGuard` が見つけ、終了コード 8 にします。`BatchJobGuard` の照合は `@ConditionalOnProperty` と同じ規則（大文字小文字を区別しない・前後の空白は取り除かない）なので、ジョブが動いたのに 8、動いていないのに 0、にはなりません
 - `ApplicationRunner`: 起動の最後に `run` メソッドが呼ばれます
 - `ExitCodeGenerator`: `getExitCode` の値が、`SpringApplication.exit` の戻り値（終了コード）になります
 

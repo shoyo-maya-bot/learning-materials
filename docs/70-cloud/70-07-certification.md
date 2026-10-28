@@ -88,9 +88,9 @@ dev-environment の `cloud/` の構成を、SAA の問題の形で読みます�
 朝の 9 時台だけアクセスが 3 倍になり、応答が遅くなります。
 運用の手間を増やさず、費用も抑えたいとき、どうしますか。
 
-<!-- src: cloud/environments/prod/main.tf#L7-L7 @main -->
-```hcl title="cloud/environments/prod/main.tf（7 行目）"
-  api_desired_count  = 2
+<!-- src: cloud/environments/prod/main.tf#L8-L8 @main -->
+```hcl title="cloud/environments/prod/main.tf（8 行目）"
+  api_desired_count      = 2
 ```
 
 - A. `api_desired_count` を 6 に増やす
