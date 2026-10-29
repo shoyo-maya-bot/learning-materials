@@ -50,7 +50,8 @@
       # 固定ではなく dev-environment の各ブランチの最新と比べる（週 1 回の定期検査）
   python scripts/check_code_quotes.py --suggest             # コメントの無いブロックに、一致する引用元を提案する
 
-終了コード: 0 問題なし / 1 問題あり
+終了コード: 0 問題なし / 1 問題あり（dev-environment-pin.json・--ref の書き方の誤りを含む）
+  / 2 dev-environment を用意できない（git が無い・取得できない・--repo-dir が clone でない）
 """
 
 from __future__ import annotations
@@ -116,6 +117,7 @@ from codequotes.source import (  # noqa: F401
     SHA,
     SOURCE_PREFIXES,
     Source,
+    SourceUnavailable,
     add_source_args,
     fetch,
     latest_revs,
@@ -151,6 +153,9 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         src, tmp = open_source(args.repo_dir, args.repo_url, args.ref, args.latest)
+    except SourceUnavailable as e:  # git が無い・取得できない: 教材の誤りではないので 2（トレースバックにしない）
+        print(f"NG {e}")
+        return 2
     except ValueError as e:
         print(f"NG {e}")
         return 1

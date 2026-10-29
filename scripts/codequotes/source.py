@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -15,6 +16,28 @@ REPO_URL = "https://github.com/shoyo-maya-bot/dev-environment.git"
 REFS = ("main", "exercise-base")
 SHA = re.compile(r"^[0-9a-f]{40}$")
 SOURCE_PREFIXES = ("sample-app/", "local/", "cloud/")
+
+
+class SourceUnavailable(ValueError):
+    """dev-environment を用意できない（git が無い・取得できない・--repo-dir が git の clone でない）.
+
+    教材の誤りではないので、検査スクリプトは終了コード 2 にする.
+    """
+
+
+FETCH_HINT = "ネットワークと取得元の URL を確かめてください。手元の clone なら --repo-dir"
+
+
+def _git(args: list[str], what: str, hint: str = FETCH_HINT) -> subprocess.CompletedProcess[str]:
+    """git を実行する. git が無い・失敗したら SourceUnavailable（トレースバックにしない）."""
+    try:
+        return subprocess.run(["git", *args], capture_output=True, text=True, check=True)
+    except OSError:  # FileNotFoundError など（PATH に git が無い）
+        raise SourceUnavailable(f"{what}: git コマンドが見つかりません（Git を入れて PATH を通してください）") from None
+    except subprocess.CalledProcessError as e:
+        detail = (e.stderr or e.stdout or "").strip().splitlines()
+        reason = detail[-1] if detail else f"終了コード {e.returncode}"
+        raise SourceUnavailable(f"{what}: {reason}（{hint}）") from None
 
 
 def load_pins(path: Path = PIN_FILE) -> tuple[str, dict[str, str]]:
@@ -114,21 +137,14 @@ class Source:
 
 def fetch(dest: Path, url: str, pins: dict[str, str]) -> None:
     """固定した SHA だけを取得し、refs/remotes/origin/<名前> に置く（ブランチの最新は見ない）."""
-    subprocess.run(["git", "init", "-q", str(dest)], check=True)
+    _git(["init", "-q", str(dest)], "作業用の git リポジトリを作れません")
     specs = [f"+{sha}:refs/remotes/origin/{name}" for name, sha in pins.items()]
-    subprocess.run(["git", "-C", str(dest), "fetch", "-q", "--depth", "1", url, *specs], check=True)
+    _git(["-C", str(dest), "fetch", "-q", "--depth", "1", url, *specs], f"{url} から固定した SHA を取得できません")
 
 
 def latest_revs(url: str, names: list[str]) -> dict[str, str]:
     """取得元のブランチ（names）の最新の SHA を git ls-remote で調べる. 調べられない・ブランチが無いなら ValueError."""
-    r = subprocess.run(
-        ["git", "ls-remote", url, *(f"refs/heads/{n}" for n in names)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if r.returncode != 0:
-        raise ValueError(f"{url} のブランチの最新を調べられません（{r.stderr.strip()}）")
+    r = _git(["ls-remote", url, *(f"refs/heads/{n}" for n in names)], f"{url} のブランチの最新を調べられません")
     found = {}
     for line in r.stdout.splitlines():
         sha, _, ref = line.partition("\t")
@@ -158,9 +174,18 @@ def open_source(
         pins.update(revs)
     pins.update(parse_overrides(overrides))
     if repo_dir:
+        _git(
+            ["-C", str(repo_dir), "rev-parse", "--git-dir"],
+            f"--repo-dir {repo_dir} は git の clone ではありません",
+            "dev-environment を clone したフォルダを指定してください",
+        )
         return Source(repo_dir, pins), None
     tmp = Path(tempfile.mkdtemp(prefix="dev-environment-"))
-    fetch(tmp, repo_url or url, {k: v for k, v in pins.items() if SHA.match(v)})
+    try:
+        fetch(tmp, repo_url or url, {k: v for k, v in pins.items() if SHA.match(v)})
+    except SourceUnavailable:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise
     return Source(tmp, pins), tmp
 
 
