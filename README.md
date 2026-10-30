@@ -26,16 +26,32 @@
 AI（Copilot など）に書かせるときの指示は [AGENTS.md](AGENTS.md) です。
 引用元の dev-environment は `dev-environment-pin.json` の SHA で固定しています（更新の手順は CONTRIBUTING.md の「引用元の固定」）。
 
+必要なもの:
+
+| もの | 使うところ |
+|---|---|
+| Python 3.12（CI と同じ版。`constraints.txt` も 3.12 向けに作っている） | MkDocs と `scripts/` の検査、`tests/` のテスト |
+| Git（`git` コマンドが PATH にあること） | `check_code_quotes.py`・`check_versions.py` が dev-environment を取得する（`--repo-dir` で手元の clone を使うときも git で読む） |
+| Java 17 以上（`java` コマンド） | `check_java_examples.py`（javaparser-core を `.cache/` に取得して使う） |
+| ruff 0.16.10（CI の lint ジョブと同じ版） | `scripts/`・`tests/` の静的解析と書式（設定は `ruff.toml`） |
+
 ```bash
 pip install -r requirements.txt -c constraints.txt   # 版は constraints.txt で固定（deps-lock.yml が自動で作る）
+pip install "ruff==0.16.10"        # lint 用（CI の lint ジョブと同じ版。constraints.txt には入れていない）
 mkdocs serve                       # http://127.0.0.1:8000
 python scripts/check_chapters.py   # 章の構成（到達目標・必須の見出し・演習と解答）と禁止語
-python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか
+python scripts/check_code_quotes.py   # 引用したコードが dev-environment の実物と一致するか（git で取得する）
 python scripts/check_versions.py   # 本文の版（mkdocs.yml の extra.versions）が exercise-base の実物と一致するか
 python scripts/check_java_examples.py   # 「例:」などの Java のコード例の構文（Java 17 以上が必要）
+python -m unittest discover -s tests -v   # 検査スクリプトのテスト（CI の code-quotes・windows ジョブと同じ）
+ruff check . && ruff format --check .     # scripts/・tests/ の静的解析と書式（CI の lint ジョブと同じ）
 mkdocs build --strict              # CI と同じ（サイト内のリンク切れで失敗）
 python scripts/check_links.py site # 外部リンクの切れ（CI では週 1 回だけ）
 ```
+
+検査スクリプトの終了コードは、0 が問題なし、1 が問題あり（教材を直す）です。`check_code_quotes.py`・`check_versions.py` は、
+git が無い・dev-environment を取得できない・`--repo-dir` が clone でないときは理由を 1 行出して 2 で終わります
+（`check_java_examples.py` も Java や jar が使えないときは 2）。2 は教材の誤りではないので、環境を直してから実行し直してください。
 
 本文に書く版（Java・Spring Boot・Gradle など）は、演習で使う dev-environment の **`exercise-base` ブランチ** のものです。
 値は `mkdocs.yml` の `extra.versions` の 1 か所にまとめ、本文では `{{ versions.gradle }}` のように参照します（そのページの先頭に `render_macros: true`）。
@@ -49,6 +65,7 @@ main に push すると GitHub Pages に公開されます（初回だけ、リ�
 
 | 時期 | 変更 |
 |---|---|
+| 2026-10 | `check_code_quotes.py`・`check_versions.py` が、git が無い・dev-environment を取得できない・`--repo-dir` が clone でないときにトレースバックで終わっていた。理由を 1 行出して終了コード 2 で終わる（教材の誤りの 1 と区別）。「書く・直す」に必要なもの（Python・Git・Java・ruff の版）とテスト・lint のコマンドを書き、README と CI・付録の数のずれを検査するテストを追加 |
 | 2026-10 | トップページの「60 設計品質」の章数（3 → 4）を直し、トップページと README の章数を実際の章ファイルと照合するテストを追加。00-01 の課題管理ツールの製品名を一般的な書き方に |
 | 2026-10 | 「80 案件担当になる」を追加（13 章と解答）。作業担当・案件担当・業務開発リーダーの 3 段階と到達度の目安表、既存の章との対応、自己診断のやり方。00 マネジメント・学習の進め方から案内する |
 | 2026-10 | 本文の版を `mkdocs.yml` の `extra.versions` に集約（mkdocs-macros-plugin を追加）。引用・版の検査に通らないと公開しない |

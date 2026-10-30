@@ -139,7 +139,8 @@ python scripts/check_code_quotes.py --repo-dir ../dev-environment   # 手元の 
 python scripts/check_versions.py --repo-dir ../dev-environment      # 本文の版が exercise-base と一致するか
 python scripts/check_java_examples.py   # 「例:」などのコード例が Java の構文として読めるか（Java 17 以上が必要）
 python scripts/check_links.py site      # 外部リンク（mkdocs build の後. CI では週 1 回だけ）
-ruff check . && ruff format --check .   # scripts/・tests/ の静的解析と書式（設定は ruff.toml。CI の lint ジョブ）
+python -m unittest discover -s tests -v   # 検査スクリプトのテスト
+ruff check . && ruff format --check .   # scripts/・tests/ の静的解析と書式（設定は ruff.toml。CI の lint ジョブ。版は README の「必要なもの」）
 ```
 
 Windows（PowerShell）でも同じコマンドで動きます（CI の `windows` ジョブで確認）。結果をファイルに保存したりパイプに渡したりするときは、
